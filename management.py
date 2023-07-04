@@ -168,7 +168,9 @@ def data_device():
         except Exception as e:
             print(f"Une erreur s'est produite lors de la récupération des informations du périphérique {device}:")
             print(str(e))
-  #----------------------------------------Gestion de changement de configuration----------------------------#
+
+
+          #----------------------------------  Records a configuration change action in a log.-------------------------------------#
 def gestion_changement(nom_utilisateur, action, details):
     current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     log_message = f"[{current_time}] Utilisateur '{nom_utilisateur}' a effectué l'action '{action}' - Détails : {details}"
@@ -179,96 +181,46 @@ def gestion_changement(nom_utilisateur, action, details):
 
     # Afficher le message de journal à l'écran
     print(log_message)
+         #----------------------------------  Checks the VTP (VLAN Trunking Protocol) mode of a network device-------------------------------------#
+def get_vtp_mode(ip_address, username, password):
+    connection = ssh_connection('cisco_ios', ip_address, username, password)
 
-    #-------------------------------------------------------configuration d'adresse ip-------------------------------------------------------------#
+    if connection:
+        output = connection.send_command('show vtp status')
+        if 'VTP operating mode: server' in output:
+            return True
+        else:
+            return False
+          #---------------------------------- Configures a VLAN on a network device.-------------------------------------#
 
-def config_ip(ip_address_of_device, interface_name, new_ip_address, subnet_mask):
-    iosv_l2= {
-    'device_type': 'cisco_ios',
-    'ip':ip_address_of_device ,
-    'username': 'safouat',
-    password': 'cisco',
-}
-    command=[]
-    net_connect = ConnectHandler(**iosv_l2)
-#net_connect.find_prompt()
-   # Se connecter au périphérique
-    net_connect.enable()
-
-    # Entrer en mode de configuration
-    net_connect.config_mode()
-
-    # Changer l'adresse IP de l'interface
-    
-    command = f"interface {interface_name}"
-    command += f"\nip address {new_ip_address} {subnet_mask}"
-    output = net_connect.send_config_set(command)
-
-    # Vérifier si la commande a réussi ou afficher les erreurs
-    if "Invalid input" in output:
-        print("Erreur : Adresse IP invalide ou commande incorrecte.")
-    elif "Incomplete command" in output:
-        print("Erreur : Commande incomplète.")
-    else:
-        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        print("Adresse IP modifiée avec succès a {current_time}.")
-        gestion_changement("safouat", "Modification d'adresse IP", f"Interface: {interface_name}, Nouvelle IP: {new_ip_address}, Masque: {subnet_mask}")
-
-
-    # Fermer la connexion SSH
-    net_connect.disconnect()
-
-            #-----------------------------------------configuration des vlans----------------------------------------------------#
-
-def config_vlans(ip_address_of_device, ip_address_vlan, subnet_mask, n,a):
-    iosv_l2 = {
-        'device_type': 'ios',
-        'ip': ip_address_of_device,
-        'username': 'safouat',
-        'password': 'cisco',
-    }
-    
+def config_vlans(ip_address_of_device, ip_address_vlan, subnet_mask, n, a):
+    connection = ssh_connection('cisco_ios', ip_address_of_device, 'safouat', 'cisco')
     config_commands = [
-            'vlan ' + str(n),
-            'name Python_VLAN ' + str(n),
-            'interface vlan ' + str(n),
-            'ip address ' + ip_address_vlan + ' ' + subnet_mask
-        ]
-    if(a==1):
-           config_commands +=['no shut']
-    
-    netmiko_connect = ConnectHandler(**iosv_l2)
-    output = netmiko_connect.send_config_set(config_commands)
+        'vlan ' + str(n),
+        'name Python_VLAN ' + str(n),
+        'interface vlan ' + str(n),
+        'ip address ' + ip_address_vlan + ' ' + subnet_mask
+    ]
 
-    if output is None:
-    
-            print("Erreur : Impossible de charger la configuration.")
+    if a == 1:
+        config_commands += ['no shut']
     else:
-            
+        config_commands = ['shut']
 
-            current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            print("VLAN configuré avec succès a {current_time}.")
-            gestion_changement("safouat", "Configuration de VLAN", f"Numéro VLAN: {n}, Adresse IP VLAN: {ip_address_vlan}, Masque: {subnet_mask}")
+    if get_vtp_mode(ip_address_of_device, 'safouat', 'cisco'):
+        output = connection.send_config_set(config_commands)
+        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print(f"VLAN configuré avec succès à {current_time}.")
+        gestion_changement("safouat", "Configuration de VLAN", f"Numéro VLAN: {n}, Adresse IP VLAN: {ip_address_vlan}, Masque: {subnet_mask}")
 
-
-
-            
-        #------------------------------------------------CHECK INTERFACES down --------------------------------------------------------------#
-
-
+          #----------------------------------  Checks the status of interfaces on a network device with list-------------------------------------#
 def check_interfaces(ip_address_of_device):
-    iosv_l2 = {
-        'device_type': 'cisco_ios',
-        'ip': ip_address_of_device,
-        'username': 'safouat',
-        'password': 'cisco',
-    }
+    connection = ssh_connection('cisco_ios', ip_address_of_device, 'safouat', 'cisco')
     config_commands = ['show ip int brief']
 
-    netmiko_connect = ConnectHandler(**iosv_l2)
-    output = netmiko_connect.send_command(config_commands[0])
+    output = connection.send_command(config_commands[0])
     interfaces = output.splitlines()[2:]  # Ignorer les deux premières lignes du résultat
-    
+
     interface_data = []
     for interface in interfaces:
         interface_info = interface.split()
@@ -279,54 +231,50 @@ def check_interfaces(ip_address_of_device):
                 'Protocol': interface_info[5]
             }
             interface_data.append(interface_dict)
-    
-    print(json.dumps(interface_data, indent=4))
 
-check_interfaces('192.168.122.72')
+    return interface_dict
+            #----------------------------------Enables an interface on a network device----------------------------------------#
+def enable_interface(ip_address_of_device, interface):
+    A = check_interfaces(ip_address_of_device)
+    for intf in A:
+        if intf['Interface'] == interface:
+            connection = ssh_connection('cisco_ios', ip_address_of_device, 'safouat', 'cisco')
+            config_commands = ['interface ' + interface, 'no shut']
+            output = connection.send_config_set(config_commands)
+            break
 
-    #----------------------------------check vlans------------------------#
+             #----------------------------------Configures a port as an access port on a network device-------------------------------------#
+def access_port(ip_address_device, a, port):
+    connection = ssh_connection('cisco_ios', ip_address_device, 'safouat', 'cisco')
 
-def get_vtp_revision(ip_address, username, password):
-    device = {
-        'device_type': 'cisco_ios',
-        'ip': ip_address,
-        'username': username,
-        'password': password,
-    }
+    for i in a:
+        config_commands = [
+            'int ' + port,
+            'switchport mode access',
+            'switchport nonegotiate',
+            'switchport access vlan ' + str(i)
+        ]
 
-    try:
-        connection = ConnectHandler(**device)
-        output = connection.send_command('show vtp status')
-        if 'VTP operating mode: server' in output:
-            print(f"Le commutateur  est configure en tant que serveur VTP.")
+        output = connection.send_config_set(config_commands)
 
-        else:
-            print(f"Le commutateur n'est pas configure  en tant que serveur VTP.")
+        #----------------------------------Configures a port as a trunk port on a network device..-------------------------------------#
+def trunk_port_configuration(ip_address_device, a, port):
+    connection = ssh_connection('cisco_ios', ip_address_device, 'safouat', 'cisco')
 
-        lines = output.splitlines()
+    for i in a:
+        config_commands = [
+            'int ' + port,
+            'switchport mode trunk',
+            'switchport trunk encapsulation dot1q',
+            'switchport trunk allowed vlan ' + str(i)
+        ]
 
-        # Recherche de la ligne contenant la r      vision de configuration
-        for line in lines:
-            if 'Configuration Revision' in line:
-                revision = line.split(':')[1].strip()
-                return revision
+        output = connection.send_config_set(config_commands)
 
-        return None  # Si la r      vision de configuration n'est pas trouv      e
+         #--------------------------------------------Spanning tree Protocol Configuration-------------------------------------------#
 
-    except Exception as e:
-        print(f"Erreur lors de la connexion au commutateur: {e}")
-        return None
 
-# Exemple d'utilisation
-ip_address = '192.168.122.72'
-username = 'safouat'
-password = 'cisco'
-
-revision = get_vtp_revision(ip_address, username, password)
-if revision is not None:
-    print(f"La r      vision de configuration VTP du commutateur {ip_address} est {revision}.")
-else:
-    print("Impossible d'obtenir la  vision de configuration VTP.")
+       
 
 
           #----------------------------------------------interface de gestion et configuratiion----------------------------------------------------------------#
@@ -479,6 +427,22 @@ def configure_stp(ip_address_of_device):
     # Fermer la connexion SSH
     net_connect.disconnect()
  
+ 
+
+
+
+
+
+
+    
+
+
+
+
+
+
+
+
  
 
 
