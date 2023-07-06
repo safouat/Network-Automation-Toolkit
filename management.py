@@ -21,7 +21,7 @@ import datetime
 text = ""
 
 # Hard code the values of your server and IP address here.
-ip_address = "109.74.200.23"
+ip_address = "localhost"
 port_number = "8080"
 # Time interval in seconds for code to execute.
 time_interval = 10
@@ -129,6 +129,8 @@ def device_input():
                         input("\n Do you want more devices? answer by 'y' or 'n'! : " )
         return devices_list
 
+       #----------------------------------------LAYER 2 :CONFIGURATION ------------------------------------------------------#
+
             #--------------------------------------information sur device---------------------------------------#
 def data_device():
     devices = ['192.168.122.72', '192.168.122.3', '192.168.122.1']
@@ -214,7 +216,7 @@ def config_vlans(ip_address_of_device, ip_address_vlan, subnet_mask, n, a):
         gestion_changement("safouat", "Configuration de VLAN", f"Numéro VLAN: {n}, Adresse IP VLAN: {ip_address_vlan}, Masque: {subnet_mask}")
 
           #----------------------------------  Checks the status of interfaces on a network device with list-------------------------------------#
-def check_interfaces(ip_address_of_device):
+def check_interfaces_disabled(ip_address_of_device):
     connection = ssh_connection('cisco_ios', ip_address_of_device, 'safouat', 'cisco')
     config_commands = ['show ip int brief']
 
@@ -224,7 +226,29 @@ def check_interfaces(ip_address_of_device):
     interface_data = []
     for interface in interfaces:
         interface_info = interface.split()
-        if interface_info[4] == 'down':
+        if interface_info[4] == 'down'or interface_info[4] == 'administratively down' :
+            interface_dict = {
+                'Interface': interface_info[0],
+                'IP Address': interface_info[1],
+                'Protocol': interface_info[5]
+            }
+            interface_data.append(interface_dict)
+        
+        
+
+    return interface_dict
+  #----------------------------------  Checks the status of interfaces enabled on a network device with list-------------------------------------#
+def check_interfaces_enabled(ip_address_of_device):
+    connection = ssh_connection(ip_address_of_device)
+    config_commands = ['show ip int brief']
+
+    output = connection.send_command(config_commands[0])
+    interfaces = output.splitlines()[2:]  # Ignore the first two lines of the output
+
+    interface_data = []
+    for interface in interfaces:
+        interface_info = interface.split()
+        if interface_info[4] == 'up':
             interface_dict = {
                 'Interface': interface_info[0],
                 'IP Address': interface_info[1],
@@ -232,20 +256,32 @@ def check_interfaces(ip_address_of_device):
             }
             interface_data.append(interface_dict)
 
-    return interface_dict
-            #----------------------------------Enables an interface on a network device----------------------------------------#
-def enable_interface(ip_address_of_device, interface):
-    A = check_interfaces(ip_address_of_device)
-    for intf in A:
+    return interface_data
+
+def disable_interface(ip_address_of_device, interface):
+    interfaces = check_interfaces_enabled(ip_address_of_device)
+    for intf in interfaces:
         if intf['Interface'] == interface:
-            connection = ssh_connection('cisco_ios', ip_address_of_device, 'safouat', 'cisco')
-            config_commands = ['interface ' + interface, 'no shut']
+            connection = ssh_connection(ip_address_of_device)
+            config_commands = ['interface ' + interface, 'shut']
             output = connection.send_config_set(config_commands)
+            gestion_changement("admin", "Disabled interface", f"Interface: {interface}")
             break
+
+def enable_interface(ip_address_of_device, interface):
+    interfaces = check_interfaces_disabled(ip_address_of_device)
+    for intf in interfaces:
+        if intf['Interface'] == interface:
+            connection = ssh_connection(ip_address_of_device)
+            config_commands = ['interface ' + interface, 'shut']
+            output = connection.send_config_set(config_commands)
+            gestion_changement("admin", "Enabled interface", f"Interface: {interface}")
+            break
+
 
              #----------------------------------Configures a port as an access port on a network device-------------------------------------#
 def access_port(ip_address_device, a, port):
-    connection = ssh_connection('cisco_ios', ip_address_device, 'safouat', 'cisco')
+    connection = ssh_connection(ip_address_device)
 
     for i in a:
         config_commands = [
@@ -256,28 +292,175 @@ def access_port(ip_address_device, a, port):
         ]
 
         output = connection.send_config_set(config_commands)
+        gestion_changement("safouat", "Configured access port", f"Interface: {port}, VLAN: {i}")
+        #---------------------------------------------------Disable DTP------------------------------------------------------------------------------#
+def disable_DTP(ip_address_device):
+    connection = ssh_connection(ip_address_device)
+    config_commands = ['show ip int brief']
 
-        #----------------------------------Configures a port as a trunk port on a network device..-------------------------------------#
+    output = connection.send_command(config_commands[0])
+    interfaces = output.splitlines()[2:]  # Ignore the first two lines of the output
+
+    interface_data = []
+    for interface in interfaces:
+        interface_info = interface.split()
+        config_commands = ['int '+interface_info[0],'switchport nonegotiate']
+        output = connection.send_config_set(config_commands)
+        gestion_changement("safouat", "Disable DTP ", f"IP adress:{ip_address_device}")
+
+         #----------------------------------Configures a port as a trunk port on a network device..-------------------------------------#
 def trunk_port_configuration(ip_address_device, a, port):
-    connection = ssh_connection('cisco_ios', ip_address_device, 'safouat', 'cisco')
+    connection = ssh_connection(ip_address_device)
 
     for i in a:
         config_commands = [
             'int ' + port,
-            'switchport mode trunk',
             'switchport trunk encapsulation dot1q',
+            'switchport mode trunk',
             'switchport trunk allowed vlan ' + str(i)
         ]
 
         output = connection.send_config_set(config_commands)
+        if output is None:
+            print('la commande est rejecte')
+            gestion_changement("safouat", "Configured trunk port", f"Interface: {port}, VLAN: {i}")
 
-         #--------------------------------------------Spanning tree Protocol Configuration-------------------------------------------#
+        else :
+            print('la commande est bien configure')
+       #---------------------------------------------------Spanning tree Protocol Configuration-----------------------------------------------#
+def get_mode(ip_address_device):
+        connection = ssh_connection(ip_address_device)
+        config_commands=['sh spanning-tree mode ']
+        output = connection.send_config_set(config_commands)
+        return output
 
 
-       
+    #------------------------------------------------------select ur mode of configuration----------------------------#
+def config_mode(ip_address_device,mode):
+     connection = ssh_connection(ip_address_device)
+     config_commands=['spanning-tree mode '+mode]
+     output = connection.send_config_set(config_commands)
+     return output 
+    #------------------------------------------Get information about Spanning tree in the network for interfaces------------------------------------------#
+def Get_information_STP(ip_address_device,interface):
+    connection = ssh_connection(ip_address_device)
+    config_commands=['sh spanning tree int '+interface]
+    output = connection.send_config_set(config_commands)
+    bridge_root = ""
+    port_root = ""
+    designated_ports = []
+    blocking_ports = []
+    
+    lines = output.splitlines()
+    for line in lines:
+        if "Root bridge" in line:
+            bridge_root = line.split(":")[-1].strip()
+        elif "Root port" in line:
+            port_root = line.split(":")[-1].strip()
+        elif "Designated" in line:
+            designated_ports.append(line.split(":")[-1].strip())
+        elif "Blocking" in line:
+            blocking_ports.append(line.split(":")[-1].strip())
+    return {
+        "bridge_root": bridge_root,
+        "port_root": port_root,
+        "designated_ports": designated_ports,
+        "blocking_ports": blocking_ports
+    }
+    #--------------------------------configuration of spanning tree PVST------------------------------------#
+def configuration_STP_PVST(ip_address_device, interfaceV, priority, hello_time,cost, forward_time, max_age):
+    connection = ssh_connection(ip_address_device)
+    config_commands = []
+    mode=get_mode(ip_address_device)
+    if mode=='PVST' or mode=='Rapid PVST':
+        if priority is not None:
+            config_commands.append('spanning-tree vlan ' + interfaceV + ' priority ' + priority)
+        if cost is not None:
+            config_commands.append('spanning-tree vlan ' + interfaceV + ' cost ' + cost)
+        if hello_time is not None:
+            config_commands.append('spanning-tree vlan ' + interfaceV + ' hello-time ' + hello_time)
+        if forward_time is not None:
+            config_commands.append('spanning-tree vlan ' + interfaceV + ' forward-time ' + forward_time)
+        if max_age is not None:
+            config_commands.append('spanning-tree vlan ' + interfaceV + ' max-age ' + max_age)
 
+        output = connection.send_config_set(config_commands)
+    else:
+        print('Cannot configure STP parameters. The device is not in PVST or Rapid PVST mode.')
 
-          #----------------------------------------------interface de gestion et configuratiion----------------------------------------------------------------#
+    
+    #--------------------------------configuration of spanning tree MST------------------------------------#
+
+def configuration_STP_MST(ip_address_device, nbrInstance, priority, hello_time,cost, forward_time, max_age):
+     connection = ssh_connection(ip_address_device)
+     mode=get_mode(ip_address_device)
+     if mode=='mst' :
+        for i in range(1,nbrInstance):
+         #input the range of vlans in i instance 
+            start = int(input("Enter the starting value: "))
+            end = int(input("Enter the ending value: "))
+            config_commands = ['instance {} vlan {},{}'.format(i, start, end)]
+            if priority is not None:
+               config_commands.append('spanning-tree mst ' + i + ' priority ' + priority)
+            if cost is not None:
+                config_commands.append('spanning-tree mst ' + i + ' cost ' + cost)
+            if hello_time is not None:
+                config_commands.append('spanning-tree mst ' + i + ' hello-time ' + hello_time)
+            if forward_time is not None:
+                config_commands.append('spanning-tree mst ' + i + ' forward-time ' + forward_time)
+            if max_age is not None:
+                config_commands.append('spanning-tree mst ' + i + ' max-age ' + max_age)
+
+            output = connection.send_config_set(config_commands)
+        else:
+            print('Cannot configure MST parameters. The device is not in MST mode .')
+
+    #--------------------------------configuration of the convergence-----------------------------------#
+def configure_STP_convergence(ip_address_device,interfaceV):
+    connection = ssh_connection(ip_address_device)
+    config_commands = []
+
+    # Configure PortFast on the specified interface
+    config_commands.append('interface ' + interfaceV)
+    config_commands.append('spanning-tree portfast')
+
+    # Check if the switch supports UplinkFast and enable it if available
+    if is_uplinkfast_supported(ip_address_device):
+        config_commands.append('spanning-tree uplinkfast')
+
+    # Check if the switch supports BackboneFast and enable it if available
+    if is_backbonefast_supported(ip_address_device):
+        config_commands.append('spanning-tree backbonefast')  
+    
+    output = connection.send_config_set(config_commands)
+    return output
+
+     
+
+def is_uplinkfast_supported(ip_address_device):
+    connection = ssh_connection(ip_address_device)
+    # Vérifier si la commande "spanning-tree uplinkfast" est disponible dans la sortie de la commande "show spanning-tree summary"
+    command = 'show spanning-tree summary | include UplinkFast'
+    output = connection.send_command(command)
+    if 'UplinkFast is enabled' in output:
+        return True
+    else:
+        return False
+
+# Fonction pour vérifier si BackboneFast est pris en charge sur le commutateur Cisco
+def is_backbonefast_supported(ip_address_device):
+    connection = ssh_connection(ip_address_device) 
+
+    # Vérifier si la commande "spanning-tree backbonefast" est disponible dans la sortie de la commande "show spanning-tree summary"
+    command = 'show spanning-tree summary | include BackboneFast'
+    output = connection.send_command(command)
+
+    if 'BackboneFast is enabled' in output:
+        return True
+    else:
+        return False
+
+    #----------------------------------------------interface de gestion et configuratiion------------------------------------------------#
 
 def manage_firewall():
     global banned_ips, banned_ports, threshold, time_window
@@ -328,7 +511,7 @@ except KeyboardInterrupt:
     # Gérer l'interruption par l'utilisateur (Ctrl+C)
     nfqueue.unbind()
 
-                #------------------------------------------filtrage de trafic par Rapport a IP-----------------------------------------------------#
+#--------------------Filters packets based on the source IP address and drops them if they are in the blocked list--------------#
 
 def ip_addresses_blocked(pkt):
     ip_pkt = IP(pkt.get_raw_packet())
@@ -349,7 +532,7 @@ except KeyboardInterrupt:
     # Gérer l'interruption par l'utilisateur (Ctrl+C)
     pass
 
-            #--------------------------Filtrage de trafic par rapport au Port-------------------------------------#
+           #---------Filters packets based on the source port and prints a message if it is in the banned list----------#
 def process_packet(pkt):
     if 'tcp' in pkt:
         # Vérifier si le port source du paquet est dans la liste interdite
@@ -362,6 +545,8 @@ capture = pyshark.LiveCapture()
 # Filtrer les paquets en utilisant Pyshark et appliquer le traitement des paquets
 capture.sniff(packet_count=0, stop_filter=process_packet, only_summaries=True)
 
+
+      #------------Filters packets based on the number of requests from a source IP and drops them if they exceed the threshold--------------#
 
 def block_excessive_requests(pkt):
     global ip_counts
@@ -394,40 +579,23 @@ capture.sniff(packet_count=0, stop_filter=block_excessive_requests)
  
      
 
-       #------------------------------------------------spanning tree-------------------------------------------------#
-
-def configure_stp(ip_address_of_device):
-    iosv_l2 = {
-        'device_type': 'cisco_ios',
-        'ip': ip_address_of_device,
-        'username': 'safouat',
-        'password': 'cisco',
-    }
-
-    net_connect = ConnectHandler(**iosv_l2)
-    net_connect.enable()
-
-    # Entrer en mode de configuration
-    net_connect.config_mode()
-
-    # Activer STP sur tous les VLANs
-    command = 'spanning-tree mode rapid-pvst'
-    output = net_connect.send_config_set(command)
-    print(output)
-
-    # Vérifier si la commande a réussi ou afficher les erreurs
-    if "Invalid input" in output:
-        print("Erreur : Commande STP invalide ou non prise en charge.")
-    elif "Incomplete command" in output:
-        print("Erreur : Commande STP incomplète.")
-    else:
-        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        print("STP activé avec succès à {current_time}.")
-
-    # Fermer la connexion SSH
-    net_connect.disconnect()
  
  
+
+
+
+
+
+
+    
+
+
+
+
+
+
+
+
 
 
 
