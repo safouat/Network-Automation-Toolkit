@@ -578,6 +578,7 @@ capture = pyshark.LiveCapture()
 capture.sniff(packet_count=0, stop_filter=block_excessive_requests)
 
                         #------------------------------------------MAIN--------------------------------------------#
+ 
 def main():
     print("Welcome to the Network Configuration Tool!")
     devices_list = device_input()  # Get the list of devices from user input
@@ -596,10 +597,28 @@ def main():
         subnet_mask = input("Enter the subnet mask for the VLAN: ")
         vlan_status = input("Enter '1' to enable the VLAN or '0' to disable it: ")
         config_vlans(ip_address, ip_address_vlan, subnet_mask, vlan_number, int(vlan_status))
+        
+        request1=input("Do you want enable interface? YES OR NO ")
+        if request1.lower() == "yes":
+            interface = input("Enter the interface name: ")
+            enable_interface(ip_address, interface)
+        elif request1.lower() == "no":
+            interface = input("Enter the interface name: ")
+            disable_interface(ip_address, interface)
+        else:
+            print("Invalid choice. Skipping interface configuration.")
 
-        interface = input("Enter the interface name: ")
-        enable_interface(ip_address, interface)
-
+        request2=input("Do you want disable DTP ? YES OR NO ")
+        if request1.lower() == "yes":
+            disable_DTP(ip_address)
+        port=int(input(" wich port do u want to configure"))
+        request3=input('do u want the port to be Acces or Trunk? Acces or Trunk')
+        i=int(input("number of the vlan"))
+        if request3=='Acces':
+            access_port(ip_address, i, port)
+        if request3=='Trunk':
+            trunk_port_configuration(ip_address, i, port)
+        
         mode = input("Enter the STP mode (PVST, Rapid PVST, or MST): ")
         config_mode(ip_address, mode)
 
@@ -619,14 +638,17 @@ def main():
             forward_time = input("Enter the STP forward time: ")
             max_age = input("Enter the STP max age: ")
             configuration_STP_MST(ip_address, nbr_instance, priority, hello_time, cost, forward_time, max_age)
+        request4=input('do u want to protect ur spanning tree?Yes or No')
+        if request4=='yes':
+            interfaceV=int(input("Enter the number of the interface of the vlan: "))
+            configure_STP_convergence(ip_address,interfaceV)
 
         # Close the SSH connection
         print(f"\n--- Closing SSH Connection to Device: {hostname} ({ip_address}) ---")
-        connection.disconnect()
+        
 
 if __name__ == "__main__":
     main()
-
 
  
  
