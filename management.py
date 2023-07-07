@@ -576,7 +576,34 @@ capture = pyshark.LiveCapture()
 
 # Filtrer les paquets en utilisant Pyshark et appliquer le blocage des requêtes excessives
 capture.sniff(packet_count=0, stop_filter=block_excessive_requests)
+
  
+def main():
+    devices_list = device_input()  # Get the list of devices from user input
+
+    for device in devices_list:
+        ip_address = device[0]
+        hostname = device[1]
+
+        print(f"\n--- Configuring Device: {hostname} ({ip_address}) ---")
+        ssh_connection(ip_address)  # Establish SSH connection to the device
+
+        # Perform desired configuration tasks for the device
+        # For example:
+        config_vlans(ip_address, "192.168.1.1", "255.255.255.0", 10, 1)
+        access_port(ip_address, [10], "GigabitEthernet0/1")
+        disable_DTP(ip_address)
+        trunk_port_configuration(ip_address, [10, 20, 30], "GigabitEthernet0/2")
+        config_mode(ip_address, "mst")
+        configuration_STP_MST(ip_address, 3, 24576, 2, 200, 15, 35)
+
+        # Close the SSH connection
+        print(f"\n--- Closing SSH Connection to Device: {hostname} ({ip_address}) ---")
+        connection.disconnect()
+
+if __name__ == "__main__":
+    main()
+
      
 
  
