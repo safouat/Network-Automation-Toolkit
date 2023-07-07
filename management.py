@@ -577,8 +577,9 @@ capture = pyshark.LiveCapture()
 # Filtrer les paquets en utilisant Pyshark et appliquer le blocage des requêtes excessives
 capture.sniff(packet_count=0, stop_filter=block_excessive_requests)
 
- 
+                        #------------------------------------------MAIN--------------------------------------------#
 def main():
+    print("Welcome to the Network Configuration Tool!")
     devices_list = device_input()  # Get the list of devices from user input
 
     for device in devices_list:
@@ -590,12 +591,34 @@ def main():
 
         # Perform desired configuration tasks for the device
         # For example:
-        config_vlans(ip_address, "192.168.1.1", "255.255.255.0", 10, 1)
-        access_port(ip_address, [10], "GigabitEthernet0/1")
-        disable_DTP(ip_address)
-        trunk_port_configuration(ip_address, [10, 20, 30], "GigabitEthernet0/2")
-        config_mode(ip_address, "mst")
-        configuration_STP_MST(ip_address, 3, 24576, 2, 200, 15, 35)
+        vlan_number = int(input("Enter the VLAN number: "))
+        ip_address_vlan = input("Enter the IP address for the VLAN: ")
+        subnet_mask = input("Enter the subnet mask for the VLAN: ")
+        vlan_status = input("Enter '1' to enable the VLAN or '0' to disable it: ")
+        config_vlans(ip_address, ip_address_vlan, subnet_mask, vlan_number, int(vlan_status))
+
+        interface = input("Enter the interface name: ")
+        enable_interface(ip_address, interface)
+
+        mode = input("Enter the STP mode (PVST, Rapid PVST, or MST): ")
+        config_mode(ip_address, mode)
+
+        if mode.lower() == "pvst" or mode.lower() == "rapid pvst":
+            priority = input("Enter the STP priority: ")
+            hello_time = input("Enter the STP hello time: ")
+            cost = input("Enter the STP cost: ")
+            forward_time = input("Enter the STP forward time: ")
+            max_age = input("Enter the STP max age: ")
+            configuration_STP_PVST(ip_address, interface, priority, hello_time, cost, forward_time, max_age)
+
+        if mode.lower() == "mst":
+            nbr_instance = int(input("Enter the number of MST instances: "))
+            priority = input("Enter the STP priority: ")
+            hello_time = input("Enter the STP hello time: ")
+            cost = input("Enter the STP cost: ")
+            forward_time = input("Enter the STP forward time: ")
+            max_age = input("Enter the STP max age: ")
+            configuration_STP_MST(ip_address, nbr_instance, priority, hello_time, cost, forward_time, max_age)
 
         # Close the SSH connection
         print(f"\n--- Closing SSH Connection to Device: {hostname} ({ip_address}) ---")
@@ -604,7 +627,6 @@ def main():
 if __name__ == "__main__":
     main()
 
-     
 
  
  
