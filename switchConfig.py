@@ -433,8 +433,9 @@ def configure_STP_convergence(ip_address_device,interfaceV):
 
                         #------------------------------------------MAIN--------------------------------------------#
  # ...
-
-if choice == '1':
+if __name__ == "__main__":
+ 
+ if choice == '1':
     # Configure VLAN
     vlan_number = int(input("Enter the VLAN number: "))
     ip_address_vlan = input("Enter the IP address for the VLAN: ")
@@ -442,7 +443,7 @@ if choice == '1':
     vlan_status = input("Enter '1' to enable the VLAN or '0' to disable it: ")
     config_vlans(ip_address, ip_address_vlan, subnet_mask, vlan_number, int(vlan_status))
 
-elif choice == '2':
+ elif choice == '2':
     # Enable/Disable Interface
     request1 = input("Do you want to enable or disable the interface? (Enable/Disable): ")
     interface = input("Enter the interface name: ")
@@ -453,11 +454,11 @@ elif choice == '2':
     else:
         print("Invalid choice. Skipping interface configuration.")
 
-elif choice == '3':
+ elif choice == '3':
     # Disable DTP
     disable_DTP(ip_address)
 
-elif choice == '4':
+ elif choice == '4':
     # Configure Port (Access/Trunk)
     interface = input("Enter the interface name: ")
     request3 = input('Do you want to configure the port as Access or Trunk? (Access/Trunk): ')
@@ -467,12 +468,12 @@ elif choice == '4':
     elif request3.lower() == 'trunk':
         trunk_port_configuration(ip_address, [vlan_number], interface)
 
-elif choice == '5':
+ elif choice == '5':
     # Configure STP Mode
     mode = input("Enter the STP mode (PVST, Rapid PVST, or MST): ")
     config_mode(ip_address, mode)
 
-elif choice == '6':
+ elif choice == '6':
     # Configure STP Parameters
     mode = input("Enter the STP mode (PVST, Rapid PVST, or MST): ")
     if mode.lower() == "pvst" or mode.lower() == "rapid pvst":
@@ -491,15 +492,15 @@ elif choice == '6':
         max_age = input("Enter the STP max age: ")
         configuration_STP_MST(ip_address, nbr_instance, priority, hello_time, cost, forward_time, max_age)
 
-elif choice == '7':
+ elif choice == '7':
     # Configure STP Convergence
     interface = input("Enter the interface name: ")
     configure_STP_convergence(ip_address, interface)
 
-elif choice == '8':
+ elif choice == '8':
     break
 
-else:
+ else:
     print("Invalid choice. Please enter a valid option.")
 
 # ...
