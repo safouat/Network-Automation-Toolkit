@@ -1,6 +1,8 @@
 # Network-Automation-Toolkit-Simplifying-Network-Management-and-Security
 
 Switch Configuration Menu:
+![image](https://github.com/safouat/Network-Automation-Toolkit-Simplifying-Network-Management-and-Security/assets/120058233/b9a66bb5-6833-4666-9b69-71e8ba336b8c)
+
 
     VLAN Configuration: VLANs (Virtual Local Area Networks) allow you to logically segment your network, enhancing security and manageability by grouping devices based on functions or departments.
 
@@ -15,6 +17,8 @@ Switch Configuration Menu:
     STP Convergence Configuration: This option allows you to fine-tune STP convergence settings, ensuring rapid network recovery in case of topology changes.
 
 Router Configuration Menu:
+![image](https://github.com/safouat/Network-Automation-Toolkit-Simplifying-Network-Management-and-Security/assets/120058233/c825c953-b269-40b8-b63c-9ab2ff5b6983)
+
 
     Static Routing Configuration: Configure static routes to manually define paths for network traffic between different subnets or networks.
 
