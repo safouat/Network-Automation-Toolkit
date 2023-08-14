@@ -1,7 +1,9 @@
 # Network-Automation-Toolkit-Simplifying-Network-Management-and-Security
 The provided Network Automation Toolkit illustrates the utilization of the SSH connection by using the Netmiko and NAPALM  for automating the configuration of diverse network parameters on Cisco devices. This automation  significantly curtails the need for manual configuration, resulting in accelerated setup times and a marked reduction in the potential for human errors. Consequently, network modifications are executed more swiftly and with heightened precision.in practical real-world scenarios, the code should be executed on the network administrator's own PC to configure and manage the actual network infrastructure.For training purposes, I utilized GNS3 along with a specific network topology. During the training, the code was executed within a network automation environment.
+
 Switch Configuration Menu:
-![image](https://github.com/safouat/Network-Automation-Toolkit-Simplifying-Network-Management-and-Security/assets/120058233/b9a66bb5-6833-4666-9b69-71e8ba336b8c)
+![Screenshot from 2023-08-14 19-01-12](https://github.com/safouat/Network-Automation-Toolkit/assets/120058233/9e188316-85b8-4237-8063-6e10938f4edd)
+
 
 
     VLAN Configuration: VLANs (Virtual Local Area Networks) allow you to logically segment your network, enhancing security and manageability by grouping devices based on functions or departments.
@@ -17,8 +19,8 @@ Switch Configuration Menu:
     STP Convergence Configuration: This option allows you to fine-tune STP convergence settings, ensuring rapid network recovery in case of topology changes.
 
 Router Configuration Menu:
-![image](https://github.com/safouat/Network-Automation-Toolkit-Simplifying-Network-Management-and-Security/assets/120058233/c825c953-b269-40b8-b63c-9ab2ff5b6983)
 
+![Screenshot from 2023-08-14 19-03-04](https://github.com/safouat/Network-Automation-Toolkit/assets/120058233/e77f4851-f4a5-4997-be15-e084de4fe743)
 
     Static Routing Configuration: Configure static routes to manually define paths for network traffic between different subnets or networks.
 
@@ -38,6 +40,7 @@ Router Configuration Menu:
 
 
 My topology:
-![image](https://github.com/safouat/Network-Automation-Toolkit-Simplifying-Network-Management-and-Security/assets/120058233/7ce5927f-897d-4f6c-bc00-bdf34032b943)
+
+![Screenshot from 2023-08-14 19-05-21](https://github.com/safouat/Network-Automation-Toolkit/assets/120058233/32874f3c-6875-40ce-ae6b-303a260efc1b)
 
 
