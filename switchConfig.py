@@ -434,6 +434,19 @@ def configure_STP_convergence(ip_address_device,interfaceV):
                         #------------------------------------------MAIN--------------------------------------------#
  # ...
 if __name__ == "__main__":
+  while True:
+        print("\n========== Switch Configuration Menu ==========")
+        print("1. VLAN Configuration")
+        print("2. Enable/Disable Interface")
+        print("3. Disable DTP")
+        print("4. PORT  Configuration(ACCES/TRUNK)")
+        print("5. STP MODE")
+        print("6. STP PARAMETERS Configuration ")
+        print("7. STP Convergence Configuration")  
+        print("8. Exit")
+        print("===============================================")
+
+        choice = input("Enter the number of your choice: ")
  
  if choice == '1':
     # Configure VLAN
