@@ -428,7 +428,7 @@ def configure_STP_convergence(ip_address_device,interfaceV):
     output = connection.send_config_set(config_commands)
     return output
 
-     
+
 
 
                         #------------------------------------------MAIN--------------------------------------------#
