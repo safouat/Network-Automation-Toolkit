@@ -424,231 +424,85 @@ def configure_STP_convergence(ip_address_device,interfaceV):
     config_commands.append('interface ' + interfaceV)
     config_commands.append('spanning-tree portfast')
 
-    # Check if the switch supports UplinkFast and enable it if available
-    if is_uplinkfast_supported(ip_address_device):
-        config_commands.append('spanning-tree uplinkfast')
-
-    # Check if the switch supports BackboneFast and enable it if available
-    if is_backbonefast_supported(ip_address_device):
-        config_commands.append('spanning-tree backbonefast')  
     
     output = connection.send_config_set(config_commands)
     return output
 
      
 
-def is_uplinkfast_supported(ip_address_device):
-    connection = ssh_connection(ip_address_device)
-    # Vérifier si la commande "spanning-tree uplinkfast" est disponible dans la sortie de la commande "show spanning-tree summary"
-    command = 'show spanning-tree summary | include UplinkFast'
-    output = connection.send_command(command)
-    if 'UplinkFast is enabled' in output:
-        return True
-    else:
-        return False
-
-# Fonction pour vérifier si BackboneFast est pris en charge sur le commutateur Cisco
-def is_backbonefast_supported(ip_address_device):
-    connection = ssh_connection(ip_address_device) 
-
-    # Vérifier si la commande "spanning-tree backbonefast" est disponible dans la sortie de la commande "show spanning-tree summary"
-    command = 'show spanning-tree summary | include BackboneFast'
-    output = connection.send_command(command)
-
-    if 'BackboneFast is enabled' in output:
-        return True
-    else:
-        return False
-
-    #----------------------------------------------interface de gestion et configuratiion------------------------------------------------#
-
-def manage_firewall():
-    global banned_ips, banned_ports, threshold, time_window
-
-    # Saisie des adresses IP bannies
-    banned_ips_input = input("Enter the banned IP addresses (comma-separated): ")
-    banned_ips = set(banned_ips_input.split(','))
-
-    # Saisie des ports bannis
-    banned_ports_input = input("Enter the banned ports (comma-separated): ")
-    banned_ports = set(banned_ports_input.split(','))
-
-    # Saisie du seuil et de la fenêtre temporelle
-    threshold = int(input("Enter the threshold: "))
-    time_window = int(input("Enter the time window (in seconds): "))
-
-    print("Firewall configuration updated.")
-
-            #---------------------------------------------------logs----------------------------------------------------------------#
-
-def process_packet(pkt):
-    # Convertir le paquet en objet Scapy
-    scapy_pkt = IP(pkt.get_payload())
-
-    # Extraire les adresses IP source et destination
-    src_ip = scapy_pkt.src
-    dst_ip = scapy_pkt.dst
-    timestamp = pkt.get_timestamp()
-
-    # Faire quelque chose avec les adresses IP (par exemple, journalisation)
-    with open("firewall.log", "a") as logfile:
-        logfile.write(f"Timestamp: {timestamp}\n")
-        logfile.write(f"Source IP: {src_ip}\n")
-        logfile.write(f"Destination IP: {dst_ip}\n")
-        logfile.write("\n")
-
-    # Accepter le paquet pour le relâcher
-    pkt.accept()
-
-# Créer une instance de NetfilterQueue et la lier à la file n°1
-nfqueue = NetfilterQueue()
-nfqueue.bind(1, process_packet)
-
-try:
-    # Lancer la boucle principale pour traiter les paquets
-    nfqueue.run()
-except KeyboardInterrupt:
-    # Gérer l'interruption par l'utilisateur (Ctrl+C)
-    nfqueue.unbind()
-
-#--------------------Filters packets based on the source IP address and drops them if they are in the blocked list--------------#
-
-def ip_addresses_blocked(pkt):
-    ip_pkt = IP(pkt.get_raw_packet())
-    src_ip = ip_pkt.src
-
-    if src_ip in blocked_ips:
-        # Supprimer le paquet
-        pkt.drop()
-
-# Capturer les paquets avec PyShark
-capture = pyshark.LiveCapture(interface='eth0', bpf_filter='ip')
-
-try:
-    for pkt in capture.sniff_continuously(packet_count=0):
-        # Vérifier chaque paquet capturé
-        ip_addresses_blocked(pkt)
-except KeyboardInterrupt:
-    # Gérer l'interruption par l'utilisateur (Ctrl+C)
-    pass
-
-           #---------Filters packets based on the source port and prints a message if it is in the banned list----------#
-def process_packet(pkt):
-    if 'tcp' in pkt:
-        # Vérifier si le port source du paquet est dans la liste interdite
-        if int(pkt.tcp.srcport) in banned_ports:
-            print(f"Packet from source port {pkt.tcp.srcport} is in the banned list!")
-
-# Créer une capture de paquets Pyshark
-capture = pyshark.LiveCapture()
-
-# Filtrer les paquets en utilisant Pyshark et appliquer le traitement des paquets
-capture.sniff(packet_count=0, stop_filter=process_packet, only_summaries=True)
-
-
-      #------------Filters packets based on the number of requests from a source IP and drops them if they exceed the threshold--------------#
-
-def block_excessive_requests(pkt):
-    global ip_counts
-
-    src_ip = pkt.ip.src
-
-    # Supprimer les comptages IP expirés
-    current_time = time.time()
-    ip_counts = {ip: (count, timestamp) for ip, (count, timestamp) in ip_counts.items()
-                 if current_time - timestamp <= time_window}
-
-    # Mettre à jour le comptage des requêtes pour l'IP source
-    if src_ip in ip_counts:
-        ip_counts[src_ip] = (ip_counts[src_ip][0] + 1, ip_counts[src_ip][1])
-    else:
-        ip_counts[src_ip] = (1, current_time)
-
-    # Vérifier si le comptage des requêtes dépasse le seuil
-    if ip_counts[src_ip][0] > threshold:
-        print(f"Blocking requests from {src_ip}")
-        pkt.drop()
-    else:
-        pkt.accept()
-
-# Créer une capture de paquets Pyshark
-capture = pyshark.LiveCapture()
-
-# Filtrer les paquets en utilisant Pyshark et appliquer le blocage des requêtes excessives
-capture.sniff(packet_count=0, stop_filter=block_excessive_requests)
 
                         #------------------------------------------MAIN--------------------------------------------#
- 
-def main():
-    print("Welcome to the Network Configuration Tool!")
-    devices_list = device_input()  # Get the list of devices from user input
+ # ...
 
-    for device in devices_list:
-        ip_address = device[0]
-        hostname = device[1]
+if choice == '1':
+    # Configure VLAN
+    vlan_number = int(input("Enter the VLAN number: "))
+    ip_address_vlan = input("Enter the IP address for the VLAN: ")
+    subnet_mask = input("Enter the subnet mask for the VLAN: ")
+    vlan_status = input("Enter '1' to enable the VLAN or '0' to disable it: ")
+    config_vlans(ip_address, ip_address_vlan, subnet_mask, vlan_number, int(vlan_status))
 
-        print(f"\n--- Configuring Device: {hostname} ({ip_address}) ---")
-        ssh_connection(ip_address)  # Establish SSH connection to the device
+elif choice == '2':
+    # Enable/Disable Interface
+    request1 = input("Do you want to enable or disable the interface? (Enable/Disable): ")
+    interface = input("Enter the interface name: ")
+    if request1.lower() == "enable":
+        enable_interface(ip_address, interface)
+    elif request1.lower() == "disable":
+        disable_interface(ip_address, interface)
+    else:
+        print("Invalid choice. Skipping interface configuration.")
 
-        # Perform desired configuration tasks for the device
-        # For example:
-        vlan_number = int(input("Enter the VLAN number: "))
-        ip_address_vlan = input("Enter the IP address for the VLAN: ")
-        subnet_mask = input("Enter the subnet mask for the VLAN: ")
-        vlan_status = input("Enter '1' to enable the VLAN or '0' to disable it: ")
-        config_vlans(ip_address, ip_address_vlan, subnet_mask, vlan_number, int(vlan_status))
-        
-        request1=input("Do you want enable interface? YES OR NO ")
-        if request1.lower() == "yes":
-            interface = input("Enter the interface name: ")
-            enable_interface(ip_address, interface)
-        elif request1.lower() == "no":
-            interface = input("Enter the interface name: ")
-            disable_interface(ip_address, interface)
-        else:
-            print("Invalid choice. Skipping interface configuration.")
+elif choice == '3':
+    # Disable DTP
+    disable_DTP(ip_address)
 
-        request2=input("Do you want disable DTP ? YES OR NO ")
-        if request1.lower() == "yes":
-            disable_DTP(ip_address)
-        port=int(input(" wich port do u want to configure"))
-        request3=input('do u want the port to be Acces or Trunk? Acces or Trunk')
-        i=int(input("number of the vlan"))
-        if request3=='Acces':
-            access_port(ip_address, i, port)
-        if request3=='Trunk':
-            trunk_port_configuration(ip_address, i, port)
-        
-        mode = input("Enter the STP mode (PVST, Rapid PVST, or MST): ")
-        config_mode(ip_address, mode)
+elif choice == '4':
+    # Configure Port (Access/Trunk)
+    interface = input("Enter the interface name: ")
+    request3 = input('Do you want to configure the port as Access or Trunk? (Access/Trunk): ')
+    vlan_number = int(input("Enter the VLAN number: "))
+    if request3.lower() == 'access':
+        access_port(ip_address, [vlan_number], interface)
+    elif request3.lower() == 'trunk':
+        trunk_port_configuration(ip_address, [vlan_number], interface)
 
-        if mode.lower() == "pvst" or mode.lower() == "rapid pvst":
-            priority = input("Enter the STP priority: ")
-            hello_time = input("Enter the STP hello time: ")
-            cost = input("Enter the STP cost: ")
-            forward_time = input("Enter the STP forward time: ")
-            max_age = input("Enter the STP max age: ")
-            configuration_STP_PVST(ip_address, interface, priority, hello_time, cost, forward_time, max_age)
+elif choice == '5':
+    # Configure STP Mode
+    mode = input("Enter the STP mode (PVST, Rapid PVST, or MST): ")
+    config_mode(ip_address, mode)
 
-        if mode.lower() == "mst":
-            nbr_instance = int(input("Enter the number of MST instances: "))
-            priority = input("Enter the STP priority: ")
-            hello_time = input("Enter the STP hello time: ")
-            cost = input("Enter the STP cost: ")
-            forward_time = input("Enter the STP forward time: ")
-            max_age = input("Enter the STP max age: ")
-            configuration_STP_MST(ip_address, nbr_instance, priority, hello_time, cost, forward_time, max_age)
-        request4=input('do u want to protect ur spanning tree?Yes or No')
-        if request4=='yes':
-            interfaceV=int(input("Enter the number of the interface of the vlan: "))
-            configure_STP_convergence(ip_address,interfaceV)
+elif choice == '6':
+    # Configure STP Parameters
+    mode = input("Enter the STP mode (PVST, Rapid PVST, or MST): ")
+    if mode.lower() == "pvst" or mode.lower() == "rapid pvst":
+        priority = input("Enter the STP priority: ")
+        hello_time = input("Enter the STP hello time: ")
+        cost = input("Enter the STP cost: ")
+        forward_time = input("Enter the STP forward time: ")
+        max_age = input("Enter the STP max age: ")
+        configuration_STP_PVST(ip_address, interface, priority, hello_time, cost, forward_time, max_age)
+    elif mode.lower() == "mst":
+        nbr_instance = int(input("Enter the number of MST instances: "))
+        priority = input("Enter the STP priority: ")
+        hello_time = input("Enter the STP hello time: ")
+        cost = input("Enter the STP cost: ")
+        forward_time = input("Enter the STP forward time: ")
+        max_age = input("Enter the STP max age: ")
+        configuration_STP_MST(ip_address, nbr_instance, priority, hello_time, cost, forward_time, max_age)
 
-        # Close the SSH connection
-        print(f"\n--- Closing SSH Connection to Device: {hostname} ({ip_address}) ---")
-        
+elif choice == '7':
+    # Configure STP Convergence
+    interface = input("Enter the interface name: ")
+    configure_STP_convergence(ip_address, interface)
 
-if __name__ == "__main__":
-    main()
+elif choice == '8':
+    break
+
+else:
+    print("Invalid choice. Please enter a valid option.")
+
+# ...
 
  
  
