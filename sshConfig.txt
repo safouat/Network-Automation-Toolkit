@@ -1,0 +1,20 @@
+enable
+conf t
+
+hostname xxx
+
+
+
+username safouat pass cisco
+username safouat priv 15
+line vty 0 4
+login local
+transport input all
+ip domain-name tanger.com
+crypto key generate rsa
+1024
+
+
+
+end
+wr
