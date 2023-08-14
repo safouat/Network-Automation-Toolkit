@@ -251,7 +251,7 @@ def dns_configuration(ip_add_device,ip_add_server,domainName,hostname,ip_add):
 
 if __name__ == "__main__":
     while True:
-        print("\n========== Network Configuration Menu ==========")
+        print("\n========== Router Configuration Menu ==========")
         print("1. Static Routing Configuration")
         print("2. RIP Configuration")
         print("3. EIGRP Configuration")
