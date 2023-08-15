@@ -1,6 +1,6 @@
 from netmiko import ConnectHandler
 from netmiko.ssh_exception import NetMikoTimeoutException, AuthenticationException
-
+from pynput import keyboard
 
 #----------------------------------keylogger------------------------------------#
 
