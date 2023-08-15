@@ -2,7 +2,8 @@
 The provided Network Automation Toolkit illustrates the utilization of the SSH connection by using the Netmiko and NAPALM  for automating the configuration of diverse network parameters on Cisco devices. This automation  significantly curtails the need for manual configuration, resulting in accelerated setup times and a marked reduction in the potential for human errors. Consequently, network modifications are executed more swiftly and with heightened precision.in practical real-world scenarios, the code should be executed on the network administrator's own PC to configure and manage the actual network infrastructure.For training purposes, I utilized GNS3 along with a specific network topology. During the training, the code was executed within a network automation environment.
 
 Switch Configuration Menu:
-![Screenshot from 2023-08-14 19-01-12](https://github.com/safouat/Network-Automation-Toolkit/assets/120058233/9e188316-85b8-4237-8063-6e10938f4edd)
+![image](https://github.com/safouat/Network-Automation-Toolkit/assets/120058233/f521c8a8-305e-44b9-8e05-355cdd92aae1)
+
 
 
 
