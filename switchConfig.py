@@ -132,8 +132,8 @@ def device_input():
        #----------------------------------------LAYER 2 :CONFIGURATION ------------------------------------------------------#
 
             #--------------------------------------information sur device---------------------------------------#
-def data_device():
-    devices = ['192.168.122.72', '192.168.122.3', '192.168.122.1']
+def data_device(ip):
+    devices = [ip]
 
     driver = get_network_driver('ios')
 
@@ -341,32 +341,44 @@ def config_mode(ip_address_device,mode):
      config_commands=['spanning-tree mode '+mode]
      output = connection.send_config_set(config_commands)
      return output 
-    #------------------------------------------Get information about Spanning tree in the network for interfaces------------------------------------------#
-def Get_information_STP(ip_address_device,interface):
-    connection = ssh_connection(ip_address_device)
-    config_commands=['sh spanning tree int '+interface]
-    output = connection.send_config_set(config_commands)
+
+ #------------------------------------------Get information about Spanning tree in the network for interfaces------------------------------------------#
+def Get_information_STP(ip_address_device,vlan_id):
+    connection= ssh_connection(ip_address_device)
+    config_command ='show spanning-tree vlan {}'.format(vlan_id)
+    try:
+           output = connection.send_command(config_command)
+    except Exception as e:
+        print("Erreur lors de l'ex      cution de la commande:", str(e))
+        return None
     bridge_root = ""
     port_root = ""
-    designated_ports = []
+    designated_ports = ""
     blocking_ports = []
     
     lines = output.splitlines()
+   
     for line in lines:
-        if "Root bridge" in line:
-            bridge_root = line.split(":")[-1].strip()
-        elif "Root port" in line:
-            port_root = line.split(":")[-1].strip()
-        elif "Designated" in line:
-            designated_ports.append(line.split(":")[-1].strip())
+        if "Root ID" in line and "Address" in line:
+            bridge_root += line.split(":")[0].strip()
+        if "Root" in line:
+            for i in range(0,5):
+               port_root+= line.split(":")[-1].strip()[i]
+
+        elif "Desg" in line:
+           for i in range(0,5):
+            designated_ports+=line.split(":")[-1].strip()[i]
         elif "Blocking" in line:
-            blocking_ports.append(line.split(":")[-1].strip())
+           for i in range(0,5):
+
+            blocking_ports.append(line.split(":")[-1].strip()[i])
     return {
-        "bridge_root": bridge_root,
+        "root bridge":bridge_root,
         "port_root": port_root,
         "designated_ports": designated_ports,
         "blocking_ports": blocking_ports
     }
+
     #--------------------------------configuration of spanning tree PVST------------------------------------#
 def configuration_STP_PVST(ip_address_device, interfaceV, priority, hello_time,cost, forward_time, max_age):
     connection = ssh_connection(ip_address_device)
@@ -431,7 +443,7 @@ def configure_STP_convergence(ip_address_device,interfaceV):
 
 
 
-                        #------------------------------------------MAIN--------------------------------------------#
+ #------------------------------------------MAIN--------------------------------------------#
  # ...
 if __name__ == "__main__":
   while True:
@@ -443,80 +455,103 @@ if __name__ == "__main__":
         print("5. STP MODE")
         print("6. STP PARAMETERS Configuration ")
         print("7. STP Convergence Configuration")  
-        print("8. Exit")
+        print("8. STP INFORMATION")
+        print("9. DATA INFORMATION")
+        print("10.EXIT")
         print("===============================================")
 
         choice = input("Enter the number of your choice: ")
  
- if choice == '1':
+        if choice == '1':
     # Configure VLAN
-    vlan_number = int(input("Enter the VLAN number: "))
-    ip_address_vlan = input("Enter the IP address for the VLAN: ")
-    subnet_mask = input("Enter the subnet mask for the VLAN: ")
-    vlan_status = input("Enter '1' to enable the VLAN or '0' to disable it: ")
-    config_vlans(ip_address, ip_address_vlan, subnet_mask, vlan_number, int(vlan_status))
+           vlan_number = int(input("Enter the VLAN number: "))
+           ip_address_vlan = input("Enter the IP address for the VLAN: ")
+           ip_address = input("Enter the IP address: ")
 
- elif choice == '2':
+           subnet_mask = input("Enter the subnet mask for the VLAN: ")
+           vlan_status = input("Enter '1' to enable the VLAN or '0' to disable it: ")
+           config_vlans(ip_address, ip_address_vlan, subnet_mask, vlan_number, int(vlan_status))
+
+        elif choice == '2':
     # Enable/Disable Interface
-    request1 = input("Do you want to enable or disable the interface? (Enable/Disable): ")
-    interface = input("Enter the interface name: ")
-    if request1.lower() == "enable":
-        enable_interface(ip_address, interface)
-    elif request1.lower() == "disable":
-        disable_interface(ip_address, interface)
-    else:
-        print("Invalid choice. Skipping interface configuration.")
+             request1 = input("Do you want to enable or disable the interface? (Enable/Disable): ")
+             interface = input("Enter the interface name: ")
+             ip_address = input("Enter the IP address: ")
 
- elif choice == '3':
+             if request1.lower() == "enable":
+                 enable_interface(ip_address, interface)
+             elif request1.lower() == "disable":
+                 disable_interface(ip_address, interface)
+             else:
+                 print("Invalid choice. Skipping interface configuration.")
+
+        elif choice == '3':
+              ip_address = input("Enter the IP address: ")
+
     # Disable DTP
-    disable_DTP(ip_address)
+              disable_DTP(ip_address)
 
- elif choice == '4':
+        elif choice == '4':
     # Configure Port (Access/Trunk)
-    interface = input("Enter the interface name: ")
-    request3 = input('Do you want to configure the port as Access or Trunk? (Access/Trunk): ')
-    vlan_number = int(input("Enter the VLAN number: "))
-    if request3.lower() == 'access':
-        access_port(ip_address, [vlan_number], interface)
-    elif request3.lower() == 'trunk':
-        trunk_port_configuration(ip_address, [vlan_number], interface)
+            interface = input("Enter the interface name: ")
+ ip_address = input("Enter the IP address: ")
+            request3 = input('Do you want to configure the port as Access or Trunk? (Access/Trunk): ')
+            vlan_number = int(input("Enter the VLAN number: "))
+            if request3.lower() == 'access':
+                   access_port(ip_address,vlan_number, interface)
+            elif request3.lower() == 'trunk':
+                   trunk_port_configuration(ip_address, vlan_number, interface)
 
- elif choice == '5':
+        elif choice == '5':
     # Configure STP Mode
-    mode = input("Enter the STP mode (PVST, Rapid PVST, or MST): ")
-    config_mode(ip_address, mode)
+             mode = input("Enter the STP mode (PVST, Rapid PVST, or MST): ")
+             ip_address = input("Enter the IP address: ")
 
- elif choice == '6':
+             config_mode(ip_address, mode)
+
+        elif choice == '6':
     # Configure STP Parameters
-    mode = input("Enter the STP mode (PVST, Rapid PVST, or MST): ")
-    if mode.lower() == "pvst" or mode.lower() == "rapid pvst":
-        priority = input("Enter the STP priority: ")
-        hello_time = input("Enter the STP hello time: ")
-        cost = input("Enter the STP cost: ")
-        forward_time = input("Enter the STP forward time: ")
-        max_age = input("Enter the STP max age: ")
-        configuration_STP_PVST(ip_address, interface, priority, hello_time, cost, forward_time, max_age)
-    elif mode.lower() == "mst":
-        nbr_instance = int(input("Enter the number of MST instances: "))
-        priority = input("Enter the STP priority: ")
-        hello_time = input("Enter the STP hello time: ")
-        cost = input("Enter the STP cost: ")
-        forward_time = input("Enter the STP forward time: ")
-        max_age = input("Enter the STP max age: ")
-        configuration_STP_MST(ip_address, nbr_instance, priority, hello_time, cost, forward_time, max_age)
+            mode = input("Enter the STP mode (PVST, Rapid PVST, or MST): ")
+            if mode.lower() == "pvst" or mode.lower() == "rapid pvst":
+                 priority = input("Enter the STP priority: ")
+                 hello_time = input("Enter the STP hello time: ")
+                 cost = input("Enter the STP cost: ")
+                 forward_time = input("Enter the STP forward time: ")
+                 max_age = input("Enter the STP max age: ")
+                 configuration_STP_PVST(ip_address, interface, priority, hello_time, cost, forward_time, max_age)
+            elif mode.lower() == "mst":
+                 nbr_instance = int(input("Enter the number of MST instances: "))
+                 priority = input("Enter the STP priority: ")
+                 hello_time = input("Enter the STP hello time: ")
+                 cost = input("Enter the STP cost: ")
+                 forward_time = input("Enter the STP forward time: ")
+                 max_age = input("Enter the STP max age: ")
+                 configuration_STP_MST(ip_address, nbr_instance, priority, hello_time, cost, forward_time, max_age)
 
- elif choice == '7':
+        elif choice == '7':
     # Configure STP Convergence
-    interface = input("Enter the interface name: ")
-    configure_STP_convergence(ip_address, interface)
 
- elif choice == '8':
-    break
+             interface = input("Enter the interface name: ")
+             ip_address = input("Enter the IP address: ")
 
- else:
-    print("Invalid choice. Please enter a valid option.")
+             configure_STP_convergence(ip_address, interface)
+
+        elif choice =='8':
+             interface = input("Enter the interface name: ")
+             ip_address = input("Enter the IP address: ")
+
+             print(Get_information_STP(ip_address,interface))  
+ print(Get_information_STP(ip_address,interface))  
+        elif choice=='9':
+             ip_address = input("Enter the IP address: ")
+             data_device(ip_address)
+        elif choice=='10':
+             break
+        else:
+             print("Invalid choice. Please enter a valid option.")
 
 # ...
+
 
  
  
