@@ -368,8 +368,9 @@ if __name__ == "__main__":
         print("4. OSPF Configuration")
         print("5. DHCP Configuration")
         print("6. DNS Configuration")
-        print("7. Loopback Configuration")  # Added option for Loopback Configuration
-        print("8. Exit")
+        print("7. Loopback Configuration") 
+        print("9. DATA INFORMATION")
+        print("9. Exit")
         print("===============================================")
 
         choice = input("Enter the number of your choice: ")
@@ -449,7 +450,8 @@ if __name__ == "__main__":
             loopback_list = construct_LOOPBACKLIST()
             LOOPBACK_CONFIGURATION(loopback_list)
         elif choice == "8":
-            # Loopback Configuration
+             ip_address = input("Enter the IP address: ")
+             data_device(ip_address)
             
         
         elif choice == "9":
