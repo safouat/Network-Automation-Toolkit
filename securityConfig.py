@@ -1,10 +1,11 @@
 from napalm import get_network_driver
 from napalm.base.exceptions import LockError, UnlockError
-           # This code is not finished yet #
+   # This code is not finished yet #
 # ----------ACL AUTOMATION------------------ #
 # ----PORT SECURITY IMPLEMENTATION---------- #
 # ----DHCP SNOOPING IMPLEMENTATION-------- #
 # -----DYNAMIC ARP INSPECTION------------ #
+
 def get_napalm_connection(ip_address):
     driver = get_network_driver('ios')
     device = driver(hostname=ip_address, username="safouat", password="cisco")
@@ -210,40 +211,104 @@ def configure_extended_acl(ip,source_permit, source_wildmask, dest_permit, dest_
     finally:
         device.discard_config()
           #--------------------PORT SECURITY----------------#
+def port_security(ip, interface, Mac, time):
+    device = get_napalm_connection(ip)
+    choice1 = input('which type of violation do you want to use Shut, Restrict, or Protect ').lower()
+    
+    if choice1 == 'shut':
+        choice2 = input('do you want to configure the port in Access or Trunk ').lower()
+        config_commands = [
+            f"interface {interface}",
+            f"switchport mode {choice2}",
+            "switchport port-security",
+            "errdisable recovery cause psecure-violation",
+            f"errdisable recovery interval {time}"
+        ]
+        
+    elif choice1 == 'restrict':
+        config_commands = [
+            f"interface {interface}",
+            f"switchport port-security mac-address {Mac}",
+            "switchport port-security violation restrict"
+        ]
+        
+    elif choice1 == 'protect':
+        config_commands = [
+            f"interface {interface}",
+            f"switchport port-security mac-address {Mac}",
+            "switchport port-security violation protect"
+        ]
+
+    try:
+        device.load_merge_candidate(config="\n".join(config_commands))
+        diffs = device.compare_config()
+        
+        if diffs:
+            print("Proposed configuration changes:")
+            print(diffs)
+            device.commit_config()
+            print("Configuration committed.")
+        else:
+            print("No configuration changes to commit.")
+    except LockError:
+        print("Configuration lock error.")
+    except UnlockError:
+        print("Configuration unlock error.")
+    except Exception as e:
+        print(f"Error configuring Port security: {e}")
+    finally:
+        device.discard_config()
+
 
 def main():
     try:
-        while True:
+      while True:
+        print("\n========== Switch Configuration Menu ==========")
+        print("1. ACL Configuration")
+        print("2. Port security Configuration")
+        print("3. DHCP Snooping configuration")
+        print("4. ARP INSPECTION CONFIGURATION")
+        print("5. DOS ATTACK PREVENTION")
+        print("6.EXIT")
+        print("===============================================")
+
+        choice = input("Enter the number of your choice: ")
+ 
+        if choice == '1':
             choice = input("Do you want to configure standard ACL, extended ACL, or CRUD? ").lower()
 
-           if choice == "standard":
+            if choice == "standard":
                 acl_info = construct_STANDARDACL_LIST()
                 for acl_data in acl_info.values():
-                     for permit_rule in acl_data['permitADD']:
-                          configure_STANDARDacl(device, acl_data['ip'], permit_rule, acl_data['DenyADD'], acl_data['wildMask'], acl_data['INTERFACE'])
-               
+                    configure_STANDARDacl(acl_data['ip'], acl_data['permitADD'], acl_data['DenyADD'], acl_data['wildMask'], acl_data['INTERFACE'])
 
-           elif choice == "extended":
-                 acl_info = construct_ExtendedACL_LIST()
-                 for acl_name, acl_data in acl_info.items():
-                    for source_permit, wildmask1 in zip(acl_data['SOURCEP'], acl_data['wildMask1']):
-                       for dest_permit, wildmask2 in zip(acl_data['DESTINATIONP'], acl_data['wildMask2']):
-                          for source_deny, wildmask3 in zip(acl_data['SOURCED'], acl_data['wildMask3']):
-                                for dest_deny, wildmask4 in zip(acl_data['DESTINATIOND'], acl_data['wildMask4']):
-                                        configure_extended_acl(device, acl_name, source_permit, wildmask1, dest_permit, wildmask2,
-                                                     source_deny, wildmask3, dest_deny, wildmask4, acl_data['portocol'], acl_data['INTERFACE'])
+            elif choice == "extended":
+                acl_info = construct_ExtendedACL_LIST()
+                for acl_name, acl_data in acl_info.items():
+                    configure_extended_acl(acl_data['ip'], acl_data['SOURCEP'], acl_data['wildMask1'], acl_data['DESTINATIONP'], acl_data['wildMask2'],
+                                           acl_data['SOURCED'], acl_data['wildMask3'], acl_data['DESTINATIOND'], acl_data['wildMask4'], acl_data['portocol'], acl_data['INTERFACE'])
 
-           elif choice == "crud":
+            elif choice == "crud":
                 ip = input('Enter the IP address of the device: ')
                 CrudACL(ip)
                 
-           else:
+            else:
                 print("Invalid choice. Please choose 'standard', 'extended', or 'crud'.")
+        if choice=='2':
+            ip = input("Enter the device IP address: ")
+            interface = input("Enter the interface name: ")
+            time = input("Enter the errdisable recovery interval time: ")
+    
+            mac_addresses = input("Enter a list of MAC addresses  allowed by the switch separated by spaces: ").split()
+    
+            for Mac in mac_addresses:
+                port_security(ip, interface, Mac, time)
 
     except KeyboardInterrupt:
         print("\nExiting the script.")
 
 if __name__ == "__main__":
     main()
+
 
 
