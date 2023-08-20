@@ -216,22 +216,28 @@ def main():
         while True:
             choice = input("Do you want to configure standard ACL, extended ACL, or CRUD? ").lower()
 
-            if choice == "standard":
+           if choice == "standard":
                 acl_info = construct_STANDARDACL_LIST()
                 for acl_data in acl_info.values():
-                    configure_STANDARDacl(acl_data['ip'], acl_data['permitADD'], acl_data['DenyADD'], acl_data['wildMask'], acl_data['INTERFACE'])
+                     for permit_rule in acl_data['permitADD']:
+                          configure_STANDARDacl(device, acl_data['ip'], permit_rule, acl_data['DenyADD'], acl_data['wildMask'], acl_data['INTERFACE'])
+               
 
-            elif choice == "extended":
-                acl_info = construct_ExtendedACL_LIST()
-                for acl_name, acl_data in acl_info.items():
-                    configure_extended_acl(acl_data['ip'], acl_data['SOURCEP'], acl_data['wildMask1'], acl_data['DESTINATIONP'], acl_data['wildMask2'],
-                                           acl_data['SOURCED'], acl_data['wildMask3'], acl_data['DESTINATIOND'], acl_data['wildMask4'], acl_data['portocol'], acl_data['INTERFACE'])
+           elif choice == "extended":
+                 acl_info = construct_ExtendedACL_LIST()
+                 for acl_name, acl_data in acl_info.items():
+                    for source_permit, wildmask1 in zip(acl_data['SOURCEP'], acl_data['wildMask1']):
+                       for dest_permit, wildmask2 in zip(acl_data['DESTINATIONP'], acl_data['wildMask2']):
+                          for source_deny, wildmask3 in zip(acl_data['SOURCED'], acl_data['wildMask3']):
+                                for dest_deny, wildmask4 in zip(acl_data['DESTINATIOND'], acl_data['wildMask4']):
+                                        configure_extended_acl(device, acl_name, source_permit, wildmask1, dest_permit, wildmask2,
+                                                     source_deny, wildmask3, dest_deny, wildmask4, acl_data['portocol'], acl_data['INTERFACE'])
 
-            elif choice == "crud":
+           elif choice == "crud":
                 ip = input('Enter the IP address of the device: ')
                 CrudACL(ip)
                 
-            else:
+           else:
                 print("Invalid choice. Please choose 'standard', 'extended', or 'crud'.")
 
     except KeyboardInterrupt:
