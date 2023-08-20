@@ -1,7 +1,5 @@
 # Network-Automation-Toolkit-Simplifying-Network-Management-and-Security
 The provided Network Automation Toolkit illustrates the utilization of the SSH connection by using the Netmiko and NAPALM  for automating the configuration of diverse network parameters on Cisco devices. This automation  significantly curtails the need for manual configuration, resulting in accelerated setup times and a marked reduction in the potential for human errors. Consequently, network modifications are executed more swiftly and with heightened precision.in practical real-world scenarios, the code should be executed on the network administrator's own PC to configure and manage the actual network infrastructure.For training purposes, I utilized GNS3 along with a specific network topology. During the training, the code was executed within a network automation environment.
-Security Configuration Menu:
-I'm actively engaged in a security automation initiative using NAPALM to enhance network security measures. While the provided code remains a work in progress, my primary objective is to streamline security automation procedures. This involves automating Access Control List (ACL) setups for controlling traffic, implementing port security to prevent unauthorized access, deploying DHCP snooping for safeguarding against rogue DHCP servers, and enforcing Dynamic ARP Inspection to mitigate ARP spoofing threats. By utilizing NAPALM's capabilities, I'm striving to create a more robust and efficient security infrastructure that proactively identifies and addresses potential vulnerabilities, thereby bolstering the overall security posture of the network.
 
 Switch Configuration Menu:
 ![image](https://github.com/safouat/Network-Automation-Toolkit/assets/120058233/f521c8a8-305e-44b9-8e05-355cdd92aae1)
@@ -38,6 +36,8 @@ Router Configuration Menu:
     DNS Configuration: Configure Domain Name System (DNS) settings to enable name resolution, allowing users to access resources using domain names rather than IP addresses.
 
     Loopback Configuration: Configure loopback interfaces, which are virtual interfaces used for management, testing, and routing purposes. Loopbacks provide stability to router functions and can be valuable in network design and troubleshooting.
+Security Configuration Menu:
+I'm actively engaged in a security automation initiative using NAPALM to enhance network security measures. While the provided code remains a work in progress, my primary objective is to streamline security automation procedures. This involves automating Access Control List (ACL) setups for controlling traffic, implementing port security to prevent unauthorized access, deploying DHCP snooping for safeguarding against rogue DHCP servers, and enforcing Dynamic ARP Inspection to mitigate ARP spoofing threats. By utilizing NAPALM's capabilities, I'm striving to create a more robust and efficient security infrastructure that proactively identifies and addresses potential vulnerabilities, thereby bolstering the overall security posture of the network.
 
 
 
