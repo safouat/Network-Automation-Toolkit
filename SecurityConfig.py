@@ -346,17 +346,17 @@ def main():
             if choice == "standard":
                 acl_info = construct_STANDARDACL_LIST()
                 for acl_data in acl_info.values():
-                    configure_STANDARDacl(acl_data['ip'], acl_data['permitADD'], acl_data['DenyADD'], acl_data['wildMask'], acl_data['INTERFACE'])
+                    configure_STANDARDacl(acl_data['ip'], acl_data['permitADD'], acl_data['DenyADD'], acl_data['wildMask'], acl_data['INTERFACE'],username,password)
 
             elif choice == "extended":
                 acl_info = construct_ExtendedACL_LIST()
                 for acl_name, acl_data in acl_info.items():
                     configure_extended_acl(acl_data['ip'], acl_data['SOURCEP'], acl_data['wildMask1'], acl_data['DESTINATIONP'], acl_data['wildMask2'],
-                                           acl_data['SOURCED'], acl_data['wildMask3'], acl_data['DESTINATIOND'], acl_data['wildMask4'], acl_data['portocol'], acl_data['INTERFACE'])
+                                           acl_data['SOURCED'], acl_data['wildMask3'], acl_data['DESTINATIOND'], acl_data['wildMask4'], acl_data['portocol'], acl_data['INTERFACE'],username,password)
 
             elif choice == "crud":
                 ip = input('Enter the IP address of the device: ')
-                CrudACL(ip)
+                CrudACL(ip,username,password)
                 
             else:
                 print("Invalid choice. Please choose 'standard', 'extended', or 'crud'.")
@@ -368,7 +368,7 @@ def main():
             mac_addresses = input("Enter a list of MAC addresses  allowed by the switch separated by spaces: ").split()
     
             for Mac in mac_addresses:
-                port_security(ip, interface, Mac, time)
+                port_security(ip, interface, Mac, time,username,password)
         if choice=='3': 
             ip = input("Enter the device IP address: ")
             number_vlan = input("Enter the VLAN number: ")
@@ -376,7 +376,7 @@ def main():
             rate_limit = input("Enter the rate limit: ")
             dhcp_rate_time = input("Enter the DHCP rate time: ")
     
-            dhcp_snooping(ip, number_vlan, interface, rate_limit, dhcp_rate_time)
+            dhcp_snooping(ip, number_vlan, interface, rate_limit, dhcp_rate_time,username,password)
        
           if choice=='4': 
              ip = input("Enter the device IP address: ")
@@ -386,7 +386,7 @@ def main():
              rate_limit = input("Enter the rate limit: ")
              interval = input("Enter the interval in seconds: ")
     
-             arp_inspection(ip, vlan_number, arp_inspection_type, trusted_interface, rate_limit, interval)
+             arp_inspection(ip, vlan_number, arp_inspection_type, trusted_interface, rate_limit, interval,username,password)
 
 
     except KeyboardInterrupt:
