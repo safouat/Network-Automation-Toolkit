@@ -460,10 +460,11 @@ if __name__ == "__main__":
         print("9. DATA INFORMATION")
         print("10.EXIT")
         print("===============================================")
+       
+        choice = input("Enter the number of your choice: ")
         username = input("Enter the username: ")
         
         password = getpass("Enter the password: ")
-        choice = input("Enter the number of your choice: ")
  
         if choice == '1':
     # Configure VLAN
