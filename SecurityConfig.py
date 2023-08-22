@@ -338,7 +338,7 @@ def main():
 
         choice = input("Enter the number of your choice: ")
         username = input("Enter the username: ")
-        password = getpass("Enter the password: ")
+        password=getpass.getpass('Enter the password: ')
  
         if choice == '1':
             choice = input("Do you want to configure standard ACL, extended ACL, or CRUD? ").lower()
