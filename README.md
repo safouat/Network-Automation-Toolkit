@@ -37,7 +37,8 @@ Router Configuration Menu:
 
     Loopback Configuration: Configure loopback interfaces, which are virtual interfaces used for management, testing, and routing purposes. Loopbacks provide stability to router functions and can be valuable in network design and troubleshooting.
 Security Configuration Menu:
-![image](https://github.com/safouat/Network-Automation-Toolkit/assets/120058233/d602f8b4-1318-4ee1-95f7-66838420ff37)
+![image](https://github.com/safouat/Network-Automation-Toolkit/assets/120058233/36ee41b4-eda2-48c5-a7f5-cad41c3b92c5)
+
 
 I'm actively engaged in a security automation initiative using NAPALM to enhance network security measures. While the provided code remains a work in progress, my primary objective is to streamline security automation procedures. This involves automating Access Control List (ACL) setups for controlling traffic, implementing port security to prevent unauthorized access, deploying DHCP snooping for safeguarding against rogue DHCP servers, and enforcing Dynamic ARP Inspection to mitigate ARP spoofing threats. By utilizing NAPALM's capabilities, I'm striving to create a more robust and efficient security infrastructure that proactively identifies and addresses potential vulnerabilities, thereby bolstering the overall security posture of the network.
 
