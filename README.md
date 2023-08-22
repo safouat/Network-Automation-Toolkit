@@ -56,7 +56,7 @@ DHCP Snooping is a security feature that safeguards against rogue DHCP servers a
 
 
 My topology:
-
+As previously mentioned, run the code on the network automation appliance by copying it using the command 'nano namefile.py'. After copying, execute the code using 'python3 namefile.py'. This will display the automation options you're looking to automate.
 ![Screenshot from 2023-08-14 19-05-21](https://github.com/safouat/Network-Automation-Toolkit/assets/120058233/32874f3c-6875-40ce-ae6b-303a260efc1b)
 
 
