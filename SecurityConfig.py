@@ -291,6 +291,39 @@ def configure_dhcp_snooping(ip,number_vlan,interface,rate,dhcp_rate_time):
         print(f"Error configuring DHCP snooping: {e}")
     finally:
         device.discard_config()
+
+def configure_arp_inspection(ip, vlan_number, arp_inspection_type, trusted_interface, rate_limit, interval):
+    device = get_napalm_connection(ip)
+    
+    config_commands = [
+        f"ip arp inspection vlan {vlan_number}",
+        "errdisable recovery cause arp-inspection",
+        f"inspection ip arp {arp_inspection_type}",
+        f"interface {trusted_interface}",
+        "ip arp inspection trust",
+        f"ip arp inspection limit rate {rate_limit} interval {interval}",
+    ]
+    
+    try:
+        device.load_merge_candidate(config="\n".join(config_commands))
+        diffs = device.compare_config()
+        
+        if diffs:
+            print("Proposed configuration changes:")
+            print(diffs)
+            device.commit_config()
+            print("Configuration committed.")
+        else:
+            print("No configuration changes to commit.")
+    except LockError:
+        print("Configuration lock error.")
+    except UnlockError:
+        print("Configuration unlock error.")
+    except Exception as e:
+        print(f"Error configuring ARP inspection: {e}")
+    finally:
+        device.discard_config()
+
 def main():
     try:
       while True:
@@ -342,7 +375,17 @@ def main():
             dhcp_rate_time = input("Enter the DHCP rate time: ")
     
             configure_dhcp_snooping(ip, number_vlan, interface, rate_limit, dhcp_rate_time)
-            
+       
+          if choice=='4': 
+             ip = input("Enter the device IP address: ")
+             vlan_number = input("Enter the VLAN number: ")
+             arp_inspection_type = input("Enter the ARP inspection type (src-mac/dst-mac/ip): ")
+             trusted_interface = input("Enter the trusted interface name: ")
+             rate_limit = input("Enter the rate limit: ")
+             interval = input("Enter the interval in seconds: ")
+    
+             configure_arp_inspection(ip, vlan_number, arp_inspection_type, trusted_interface, rate_limit, interval)
+
 
     except KeyboardInterrupt:
         print("\nExiting the script.")
