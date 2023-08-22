@@ -259,7 +259,7 @@ def port_security(ip, interface, Mac, time):
     finally:
         device.discard_config()
  #-----------------------------------DHCP SNOOPING--------------------------------------#
-def configure_dhcp_snooping(ip,number_vlan,interface,rate limite,dhcp-rate-time):
+def configure_dhcp_snooping(ip,number_vlan,interface,rate,dhcp-rate-time):
     device = get_napalm_connection(ip)
     
     config_commands = [
@@ -269,7 +269,7 @@ def configure_dhcp_snooping(ip,number_vlan,interface,rate limite,dhcp-rate-time)
         "no ip dhcp snooping information option",
          f"int {interface}",
          "ip dhcp snooping trust ", 
-        "ip dhcp snooping limit rate 10",  # Set the rate limit
+        f"ip dhcp snooping limit rate {rate}",  # Set the rate limit
     ]
     
     try:
