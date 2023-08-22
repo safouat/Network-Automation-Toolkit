@@ -2,6 +2,7 @@ import json
 from netmiko import ConnectHandler
 from napalm import get_network_driver
 from netfilterqueue import NetfilterQueue
+from getpass import getpass
 from scapy.all import IP,TCP, sniff
  # Install pynput using the following command: pip install pynput
 # Import the mouse and keynboard from pynput
@@ -69,12 +70,12 @@ def on_press(key):
         # We do an explicit conversion from the key object to a string and then append that to the string held in memory.
         text += str(key).strip("'")
     #---------------------------------------ssh-connection-----------------------------------------------#
-def ssh_connection(ip_address):
+def ssh_connection(ip_address,username,password):
     iosv_l2 = {
         'device_type': 'cisco_ios',
         'ip': ip_address,
-        'username': 'safouat',
-        'password': 'cisco',
+        'username': username,
+        'password': password,
     }
     try:
         connection = ConnectHandler(**iosv_l2)
@@ -95,7 +96,7 @@ def ssh_connection(ip_address):
 def enable_keylog():
 
 # Start the SSH connection
-   connection = ssh_connection(ip_address)
+   connection = ssh_connection(ip_address,username,password)
 
    if connection:
     # Start the keyboard listener in a separate thread
@@ -139,7 +140,7 @@ def data_device(ip):
 
     for device in devices:
         try:
-            iou1 = driver(device, "safouat", "cisco")
+            iou1 = driver(device, username, password)
             iou1.open()
 
             facts = iou1.get_facts()
@@ -195,8 +196,8 @@ def get_vtp_mode(ip_address, username, password):
             return False
           #---------------------------------- Configures a VLAN on a network device.-------------------------------------#
 
-def config_vlans(ip_address_of_device, ip_address_vlan, subnet_mask, n, a):
-    connection = ssh_connection('cisco_ios', ip_address_of_device, 'safouat', 'cisco')
+def config_vlans(ip_address_of_device, ip_address_vlan, subnet_mask, n, a,username,password):
+    connection = ssh_connection(ip_address_of_device, username, password)
     config_commands = [
         'vlan ' + str(n),
         'name Python_VLAN ' + str(n),
@@ -216,8 +217,8 @@ def config_vlans(ip_address_of_device, ip_address_vlan, subnet_mask, n, a):
         gestion_changement("safouat", "Configuration de VLAN", f"Numéro VLAN: {n}, Adresse IP VLAN: {ip_address_vlan}, Masque: {subnet_mask}")
 
           #----------------------------------  Checks the status of interfaces on a network device with list-------------------------------------#
-def check_interfaces_disabled(ip_address_of_device):
-    connection = ssh_connection('cisco_ios', ip_address_of_device, 'safouat', 'cisco')
+def check_interfaces_disabled(ip_address_of_device,username,password):
+    connection = ssh_connection( ip_address_of_device, username, password)
     config_commands = ['show ip int brief']
 
     output = connection.send_command(config_commands[0])
@@ -238,8 +239,8 @@ def check_interfaces_disabled(ip_address_of_device):
 
     return interface_dict
   #----------------------------------  Checks the status of interfaces enabled on a network device with list-------------------------------------#
-def check_interfaces_enabled(ip_address_of_device):
-    connection = ssh_connection(ip_address_of_device)
+def check_interfaces_enabled(ip_address_of_device,username,password):
+    connection = ssh_connection(ip_address_of_device,username,password)
     config_commands = ['show ip int brief']
 
     output = connection.send_command(config_commands[0])
@@ -258,21 +259,21 @@ def check_interfaces_enabled(ip_address_of_device):
 
     return interface_data
 
-def disable_interface(ip_address_of_device, interface):
+def disable_interface(ip_address_of_device, interface,username,password):
     interfaces = check_interfaces_enabled(ip_address_of_device)
     for intf in interfaces:
         if intf['Interface'] == interface:
-            connection = ssh_connection(ip_address_of_device)
+            connection = ssh_connection(ip_address_of_device,username,password)
             config_commands = ['interface ' + interface, 'shut']
             output = connection.send_config_set(config_commands)
             gestion_changement("admin", "Disabled interface", f"Interface: {interface}")
             break
 
-def enable_interface(ip_address_of_device, interface):
+def enable_interface(ip_address_of_device, interface,username,password):
     interfaces = check_interfaces_disabled(ip_address_of_device)
     for intf in interfaces:
         if intf['Interface'] == interface:
-            connection = ssh_connection(ip_address_of_device)
+            connection = ssh_connection(ip_address_of_device,username,password)
             config_commands = ['interface ' + interface, 'shut']
             output = connection.send_config_set(config_commands)
             gestion_changement("admin", "Enabled interface", f"Interface: {interface}")
@@ -280,8 +281,8 @@ def enable_interface(ip_address_of_device, interface):
 
 
              #----------------------------------Configures a port as an access port on a network device-------------------------------------#
-def access_port(ip_address_device, a, port):
-    connection = ssh_connection(ip_address_device)
+def access_port(ip_address_device, a, port,username,password):
+    connection = ssh_connection(ip_address_device,username,password)
 
     for i in a:
         config_commands = [
@@ -294,8 +295,8 @@ def access_port(ip_address_device, a, port):
         output = connection.send_config_set(config_commands)
         gestion_changement("safouat", "Configured access port", f"Interface: {port}, VLAN: {i}")
         #---------------------------------------------------Disable DTP------------------------------------------------------------------------------#
-def disable_DTP(ip_address_device):
-    connection = ssh_connection(ip_address_device)
+def disable_DTP(ip_address_device,username,password):
+    connection = ssh_connection(ip_address_device,username,password)
     config_commands = ['show ip int brief']
 
     output = connection.send_command(config_commands[0])
@@ -309,8 +310,8 @@ def disable_DTP(ip_address_device):
         gestion_changement("safouat", "Disable DTP ", f"IP adress:{ip_address_device}")
 
          #----------------------------------Configures a port as a trunk port on a network device..-------------------------------------#
-def trunk_port_configuration(ip_address_device, a, port):
-    connection = ssh_connection(ip_address_device)
+def trunk_port_configuration(ip_address_device, a, port,username,password):
+    connection = ssh_connection(ip_address_device,username,password)
 
     for i in a:
         config_commands = [
@@ -328,23 +329,23 @@ def trunk_port_configuration(ip_address_device, a, port):
         else :
             print('la commande est bien configure')
        #---------------------------------------------------Spanning tree Protocol Configuration-----------------------------------------------#
-def get_mode(ip_address_device):
-        connection = ssh_connection(ip_address_device)
+def get_mode(ip_address_device,username,password):
+        connection = ssh_connection(ip_address_device,username,password)
         config_commands=['sh spanning-tree mode ']
         output = connection.send_config_set(config_commands)
         return output
 
 
     #------------------------------------------------------select ur mode of configuration----------------------------#
-def config_mode(ip_address_device,mode):
-     connection = ssh_connection(ip_address_device)
+def config_mode(ip_address_device,mode,username,password):
+     connection = ssh_connection(ip_address_device,username,password)
      config_commands=['spanning-tree mode '+mode]
      output = connection.send_config_set(config_commands)
      return output 
 
  #------------------------------------------Get information about Spanning tree in the network for interfaces------------------------------------------#
-def Get_information_STP(ip_address_device,vlan_id):
-    connection= ssh_connection(ip_address_device)
+def Get_information_STP(ip_address_device,vlan_id,username,password):
+    connection= ssh_connection(ip_address_device,username,password)
     config_command ='show spanning-tree vlan {}'.format(vlan_id)
     try:
            output = connection.send_command(config_command)
@@ -380,8 +381,8 @@ def Get_information_STP(ip_address_device,vlan_id):
     }
 
     #--------------------------------configuration of spanning tree PVST------------------------------------#
-def configuration_STP_PVST(ip_address_device, interfaceV, priority, hello_time,cost, forward_time, max_age):
-    connection = ssh_connection(ip_address_device)
+def configuration_STP_PVST(ip_address_device, interfaceV, priority, hello_time,cost, forward_time, max_age,username,password):
+    connection = ssh_connection(ip_address_device,username,password)
     config_commands = []
     mode=get_mode(ip_address_device)
     if mode=='PVST' or mode=='Rapid PVST':
@@ -403,8 +404,8 @@ def configuration_STP_PVST(ip_address_device, interfaceV, priority, hello_time,c
     
     #--------------------------------configuration of spanning tree MST------------------------------------#
 
-def configuration_STP_MST(ip_address_device, nbrInstance, priority, hello_time,cost, forward_time, max_age):
-     connection = ssh_connection(ip_address_device)
+def configuration_STP_MST(ip_address_device, nbrInstance, priority, hello_time,cost, forward_time, max_age,username,password):
+     connection = ssh_connection(ip_address_device,username,password)
      mode=get_mode(ip_address_device)
      if mode=='mst' :
         for i in range(1,nbrInstance):
@@ -428,8 +429,8 @@ def configuration_STP_MST(ip_address_device, nbrInstance, priority, hello_time,c
             print('Cannot configure MST parameters. The device is not in MST mode .')
 
     #--------------------------------configuration of the convergence-----------------------------------#
-def configure_STP_convergence(ip_address_device,interfaceV):
-    connection = ssh_connection(ip_address_device)
+def configure_STP_convergence(ip_address_device,interfaceV,username,password):
+    connection = ssh_connection(ip_address_device,username,password)
     config_commands = []
 
     # Configure PortFast on the specified interface
@@ -459,7 +460,9 @@ if __name__ == "__main__":
         print("9. DATA INFORMATION")
         print("10.EXIT")
         print("===============================================")
-
+        username = input("Enter the username: ")
+        
+        password = getpass("Enter the password: ")
         choice = input("Enter the number of your choice: ")
  
         if choice == '1':
@@ -470,7 +473,7 @@ if __name__ == "__main__":
 
            subnet_mask = input("Enter the subnet mask for the VLAN: ")
            vlan_status = input("Enter '1' to enable the VLAN or '0' to disable it: ")
-           config_vlans(ip_address, ip_address_vlan, subnet_mask, vlan_number, int(vlan_status))
+           config_vlans(ip_address, ip_address_vlan, subnet_mask, vlan_number, int(vlan_status),username,password)
 
         elif choice == '2':
     # Enable/Disable Interface
@@ -479,9 +482,9 @@ if __name__ == "__main__":
              ip_address = input("Enter the IP address: ")
 
              if request1.lower() == "enable":
-                 enable_interface(ip_address, interface)
+                 enable_interface(ip_address, interface,username,password)
              elif request1.lower() == "disable":
-                 disable_interface(ip_address, interface)
+                 disable_interface(ip_address, interface,username,password)
              else:
                  print("Invalid choice. Skipping interface configuration.")
 
@@ -489,25 +492,25 @@ if __name__ == "__main__":
               ip_address = input("Enter the IP address: ")
 
     # Disable DTP
-              disable_DTP(ip_address)
+              disable_DTP(ip_address,username,password)
 
         elif choice == '4':
     # Configure Port (Access/Trunk)
             interface = input("Enter the interface name: ")
- ip_address = input("Enter the IP address: ")
+            ip_address = input("Enter the IP address: ")
             request3 = input('Do you want to configure the port as Access or Trunk? (Access/Trunk): ')
             vlan_number = int(input("Enter the VLAN number: "))
             if request3.lower() == 'access':
-                   access_port(ip_address,vlan_number, interface)
+                   access_port(ip_address,vlan_number, interface,username,password)
             elif request3.lower() == 'trunk':
-                   trunk_port_configuration(ip_address, vlan_number, interface)
+                   trunk_port_configuration(ip_address, vlan_number, interface,username,password)
 
         elif choice == '5':
     # Configure STP Mode
              mode = input("Enter the STP mode (PVST, Rapid PVST, or MST): ")
              ip_address = input("Enter the IP address: ")
 
-             config_mode(ip_address, mode)
+             config_mode(ip_address, mode,username,password)
 
         elif choice == '6':
     # Configure STP Parameters
@@ -518,7 +521,7 @@ if __name__ == "__main__":
                  cost = input("Enter the STP cost: ")
                  forward_time = input("Enter the STP forward time: ")
                  max_age = input("Enter the STP max age: ")
-                 configuration_STP_PVST(ip_address, interface, priority, hello_time, cost, forward_time, max_age)
+                 configuration_STP_PVST(ip_address, interface, priority, hello_time, cost, forward_time, max_age,username,password)
             elif mode.lower() == "mst":
                  nbr_instance = int(input("Enter the number of MST instances: "))
                  priority = input("Enter the STP priority: ")
@@ -526,7 +529,7 @@ if __name__ == "__main__":
                  cost = input("Enter the STP cost: ")
                  forward_time = input("Enter the STP forward time: ")
                  max_age = input("Enter the STP max age: ")
-                 configuration_STP_MST(ip_address, nbr_instance, priority, hello_time, cost, forward_time, max_age)
+                 configuration_STP_MST(ip_address, nbr_instance, priority, hello_time, cost, forward_time, max_age,username,password)
 
         elif choice == '7':
     # Configure STP Convergence
@@ -534,21 +537,72 @@ if __name__ == "__main__":
              interface = input("Enter the interface name: ")
              ip_address = input("Enter the IP address: ")
 
-             configure_STP_convergence(ip_address, interface)
+             configure_STP_convergence(ip_address, interface,username,password)
 
         elif choice =='8':
              interface = input("Enter the interface name: ")
              ip_address = input("Enter the IP address: ")
 
-             print(Get_information_STP(ip_address,interface))  
- print(Get_information_STP(ip_address,interface))  
+             print(Get_information_STP(ip_address,interface,username,password))  
+           
         elif choice=='9':
              ip_address = input("Enter the IP address: ")
-             data_device(ip_address)
+             data_device(ip_address,username,password)
         elif choice=='10':
              break
         else:
              print("Invalid choice. Please enter a valid option.")
+
+
+
+ 
+ 
+
+
+
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+    
+
+
+
+
+
+
+
+
 
 
 
