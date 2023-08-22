@@ -259,13 +259,13 @@ def port_security(ip, interface, Mac, time):
     finally:
         device.discard_config()
  #-----------------------------------DHCP SNOOPING--------------------------------------#
-def configure_dhcp_snooping(ip,number_vlan,interface,rate,dhcp-rate-time):
+def configure_dhcp_snooping(ip,number_vlan,interface,rate,dhcp_rate_time):
     device = get_napalm_connection(ip)
     
     config_commands = [
         "ip dhcp snooping",
         f"ip dhcp snooping vlan {number_vlan}",  # Replace with the appropriate VLAN(s)
-        f"errdisable recovery cause {dhcp-rate-time}",  
+        f"errdisable recovery cause {dhcp_rate_time}",  
         "no ip dhcp snooping information option",
          f"int {interface}",
          "ip dhcp snooping trust ", 
