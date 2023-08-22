@@ -258,8 +258,39 @@ def port_security(ip, interface, Mac, time):
         print(f"Error configuring Port security: {e}")
     finally:
         device.discard_config()
-
-
+ #-----------------------------------DHCP SNOOPING--------------------------------------#
+def configure_dhcp_snooping(ip,number_vlan,interface,rate limite,dhcp-rate-time):
+    device = get_napalm_connection(ip)
+    
+    config_commands = [
+        "ip dhcp snooping",
+        f"ip dhcp snooping vlan {number_vlan}",  # Replace with the appropriate VLAN(s)
+        f"errdisable recovery cause {dhcp-rate-time}",  
+        "no ip dhcp snooping information option",
+         f"int {interface}",
+         "ip dhcp snooping trust ", 
+        "ip dhcp snooping limit rate 10",  # Set the rate limit
+    ]
+    
+    try:
+        device.load_merge_candidate(config="\n".join(config_commands))
+        diffs = device.compare_config()
+        
+        if diffs:
+            print("Proposed configuration changes:")
+            print(diffs)
+            device.commit_config()
+            print("Configuration committed.")
+        else:
+            print("No configuration changes to commit.")
+    except LockError:
+        print("Configuration lock error.")
+    except UnlockError:
+        print("Configuration unlock error.")
+    except Exception as e:
+        print(f"Error configuring DHCP snooping: {e}")
+    finally:
+        device.discard_config()
 def main():
     try:
       while True:
@@ -303,6 +334,15 @@ def main():
     
             for Mac in mac_addresses:
                 port_security(ip, interface, Mac, time)
+         if choice=='3': 
+            ip = input("Enter the device IP address: ")
+            number_vlan = input("Enter the VLAN number: ")
+            interface = input("Enter the interface name: ")
+            rate_limit = input("Enter the rate limit: ")
+            dhcp_rate_time = input("Enter the DHCP rate time: ")
+    
+            configure_dhcp_snooping(ip, number_vlan, interface, rate_limit, dhcp_rate_time)
+            
 
     except KeyboardInterrupt:
         print("\nExiting the script.")
