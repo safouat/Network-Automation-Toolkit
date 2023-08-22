@@ -40,7 +40,17 @@ Security Configuration Menu:
 ![image](https://github.com/safouat/Network-Automation-Toolkit/assets/120058233/36ee41b4-eda2-48c5-a7f5-cad41c3b92c5)
 
 
-I'm actively engaged in a security automation initiative using NAPALM to enhance network security measures. While the provided code remains a work in progress, my primary objective is to streamline security automation procedures. This involves automating Access Control List (ACL) setups for controlling traffic, implementing port security to prevent unauthorized access, deploying DHCP snooping for safeguarding against rogue DHCP servers, and enforcing Dynamic ARP Inspection to mitigate ARP spoofing threats. By utilizing NAPALM's capabilities, I'm striving to create a more robust and efficient security infrastructure that proactively identifies and addresses potential vulnerabilities, thereby bolstering the overall security posture of the network.
+ACL Configuration:
+Access Control Lists (ACLs) are network security features that filter and control incoming and outgoing traffic based on defined rules. ACLs are implemented at routers and switches to permit or deny traffic based on criteria such as source/destination IP addresses, port numbers, protocols, and more. By configuring ACLs, network administrators can enforce security policies, control network access, and mitigate threats by selectively allowing or blocking specific types of traffic.
+
+Port Security Configuration:
+Port security is a feature commonly used in Ethernet switches to enhance network security by controlling which devices can connect to a switch port. It involves setting limits on the number of MAC addresses that can be learned on a port, and actions like shutting down or restricting port access when unauthorized devices are detected. Port security helps prevent unauthorized devices from connecting to the network and ensures that only authorized devices can communicate through the switch ports.
+
+ARP Inspection:
+ARP Inspection is a security mechanism used to mitigate Address Resolution Protocol (ARP) spoofing attacks in a network. ARP Inspection validates ARP packets to ensure that the MAC addresses in ARP responses match the IP addresses assigned to them. It works by associating trusted interfaces with valid ARP entries and rate-limiting ARP traffic to prevent flooding. By implementing ARP Inspection, networks can prevent attackers from redirecting traffic and enhancing overall security.
+
+DHCP Snooping:
+DHCP Snooping is a security feature that safeguards against rogue DHCP servers and prevents unauthorized devices from distributing IP addresses on a network. It involves classifying switch ports as trusted (connected to legitimate DHCP servers) or untrusted (end-user devices), and monitoring DHCP traffic. DHCP Snooping can drop or log DHCP traffic from untrusted sources and create a binding table of valid IP-MAC pairs to prevent address conflicts and IP misuse.
 
 
 
