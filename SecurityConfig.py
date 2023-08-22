@@ -1,14 +1,14 @@
 from napalm import get_network_driver
 from napalm.base.exceptions import LockError, UnlockError
-   # This code is not finished yet #
+from getpass import getpass
 # ----------ACL AUTOMATION------------------ #
 # ----PORT SECURITY IMPLEMENTATION---------- #
 # ----DHCP SNOOPING IMPLEMENTATION-------- #
 # -----DYNAMIC ARP INSPECTION------------ #
 
-def get_napalm_connection(ip_address):
+def get_napalm_connection(ip_address,username,password):
     driver = get_network_driver('ios')
-    device = driver(hostname=ip_address, username="safouat", password="cisco")
+    device = driver(hostname=ip_address, username=username, password=password)
     
     try:
         device.open()
@@ -18,9 +18,9 @@ def get_napalm_connection(ip_address):
     
     return device
 
-def configure_STANDARDacl(ip,permitADD, DenyADD, wildmask, interfaceACL):
+def configure_STANDARDacl(ip,permitADD, DenyADD, wildmask, interfaceACL,username,password):
     choice1 = input('Do you want to use numbered ACL? (YES or NO): ').lower()
-    device = get_napalm_connection(ip)
+    device = get_napalm_connection(ip,username,password)
     if choice1 == 'yes':
         n = int(input('Enter the number of ACL: '))  # n should be in 100-199 or 2000-2699
         config_commands = [
@@ -88,7 +88,7 @@ def construct_STANDARDACL_LIST():
     return ACL_LIST
 
 #---------------ACL CRUD---------------#
-def CrudACL(ip):
+def CrudACL(ip,username,password):
     choice = input('Do you want to delete or insert? ').lower()
     config_commands = []
     device = get_napalm_connection(ip, username, password)
@@ -166,9 +166,9 @@ def construct_ExtendedACL_LIST():
                   
 
 
-def configure_extended_acl(ip,source_permit, source_wildmask, dest_permit, dest_wildmask, source_deny, source_deny_wildmask, dest_deny, dest_deny_wildmask, protocol, interface):
+def configure_extended_acl(ip,source_permit, source_wildmask, dest_permit, dest_wildmask, source_deny, source_deny_wildmask, dest_deny, dest_deny_wildmask, protocol, interface,username,password):
     choice1 = input('Do you want to use numbered ACL? (YES or NO): ').lower()
-    device = get_napalm_connection(ip)
+    device = get_napalm_connection(ip,username,password)
     if choice1 == 'yes':
         n = int(input('Enter the number of ACL: '))  # n should be in 100-199 or 2000-2699
         config_commands = [
@@ -211,8 +211,8 @@ def configure_extended_acl(ip,source_permit, source_wildmask, dest_permit, dest_
     finally:
         device.discard_config()
           #--------------------PORT SECURITY----------------#
-def port_security(ip, interface, Mac, time):
-    device = get_napalm_connection(ip)
+def port_security(ip, interface, Mac, time,username,password):
+    device = get_napalm_connection(ip,username,password)
     choice1 = input('which type of violation do you want to use Shut, Restrict, or Protect ').lower()
     
     if choice1 == 'shut':
@@ -259,8 +259,8 @@ def port_security(ip, interface, Mac, time):
     finally:
         device.discard_config()
  #-----------------------------------DHCP SNOOPING--------------------------------------#
-def dhcp_snooping(ip,number_vlan,interface,rate,dhcp_rate_time):
-    device = get_napalm_connection(ip)
+def dhcp_snooping(ip,number_vlan,interface,rate,dhcp_rate_time,username,password):
+    device = get_napalm_connection(ip,username,password)
     
     config_commands = [
         "ip dhcp snooping",
@@ -292,8 +292,8 @@ def dhcp_snooping(ip,number_vlan,interface,rate,dhcp_rate_time):
     finally:
         device.discard_config()
 
-def arp_inspection(ip, vlan_number, arp_inspection_type, trusted_interface, rate_limit, interval):
-    device = get_napalm_connection(ip)
+def arp_inspection(ip, vlan_number, arp_inspection_type, trusted_interface, rate_limit, interval,username,password):
+    device = get_napalm_connection(ip,username,password)
     
     config_commands = [
         f"ip arp inspection vlan {vlan_number}",
@@ -337,6 +337,8 @@ def main():
         print("===============================================")
 
         choice = input("Enter the number of your choice: ")
+        username = input("Enter the username: ")
+        password = getpass("Enter the password: ")
  
         if choice == '1':
             choice = input("Do you want to configure standard ACL, extended ACL, or CRUD? ").lower()
