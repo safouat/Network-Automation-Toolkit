@@ -334,7 +334,7 @@ def main():
     
             for Mac in mac_addresses:
                 port_security(ip, interface, Mac, time)
-         if choice=='3': 
+        if choice=='3': 
             ip = input("Enter the device IP address: ")
             number_vlan = input("Enter the VLAN number: ")
             interface = input("Enter the interface name: ")
