@@ -259,7 +259,7 @@ def port_security(ip, interface, Mac, time):
     finally:
         device.discard_config()
  #-----------------------------------DHCP SNOOPING--------------------------------------#
-def configure_dhcp_snooping(ip,number_vlan,interface,rate,dhcp_rate_time):
+def dhcp_snooping(ip,number_vlan,interface,rate,dhcp_rate_time):
     device = get_napalm_connection(ip)
     
     config_commands = [
@@ -292,7 +292,7 @@ def configure_dhcp_snooping(ip,number_vlan,interface,rate,dhcp_rate_time):
     finally:
         device.discard_config()
 
-def configure_arp_inspection(ip, vlan_number, arp_inspection_type, trusted_interface, rate_limit, interval):
+def arp_inspection(ip, vlan_number, arp_inspection_type, trusted_interface, rate_limit, interval):
     device = get_napalm_connection(ip)
     
     config_commands = [
