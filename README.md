@@ -57,9 +57,33 @@ INSTALATION:
 git clone https://github.com/safouat/Network-Automation-Toolkit
 
 # Step 2: Working with a virtual simulator (e.g., GNS3):
-# - Navigate to your lab in GNS3.
-# - Locate the network automation appliance.
-# - Open the terminal within the network automation appliance.
+Environment Setup Instructions
+1. Install GNS3:
+
+    Download and install GNS3 from the official website: GNS3 Installation
+    Follow the installation steps provided for your operating system.
+
+2. Install VMware Workstation:
+
+    Download and install VMware Workstation from the official website: VMware Workstation
+    Follow the installation instructions for your operating system.
+
+3. Set Up GNS3 with VMware Workstation:
+
+    Launch GNS3 and configure it to work with VMware Workstation as described in the GNS3 documentation.
+
+4. Obtain Cisco IOS Image:
+
+    Acquire a valid Cisco IOS image from authorized sources. Make sure you have the necessary licenses to use the image for testing purposes.
+
+5. Install "Network Automation Appliance" Template:
+
+    In GNS3, import the "Network Automation Appliance" template if it's not included by default.
+    Follow the GNS3 documentation on importing appliances and templates.
+
+6. Additional Notes:
+
+    The "Network Automation Appliance" template might include preinstalled tools such as netmiko and napalm, so you may not need to install them separately.
 
 
 # If you are a network administrator:
@@ -69,7 +93,7 @@ git clone https://github.com/safouat/Network-Automation-Toolkit
 
 USAGE:
 My topology:
-As previously mentioned, run the code on the network automation appliance by copying it using the command 'nano namefile.py'.(namefile is RouterConfig or SwitchConfig or SecurityConfig)
+As previously mentioned, run the code on the terminal of the network automation appliance by copying it using the command 'nano namefile.py'.(namefile is RouterConfig or SwitchConfig or SecurityConfig)
 After copying, execute the code using 'python3 namefile.py'. 
 This will display the automation options you're looking to automate.
 ![Screenshot from 2023-08-14 19-05-21](https://github.com/safouat/Network-Automation-Toolkit/assets/120058233/32874f3c-6875-40ce-ae6b-303a260efc1b)
