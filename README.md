@@ -52,11 +52,26 @@ ARP Inspection is a security mechanism used to mitigate Address Resolution Proto
 DHCP Snooping:
 DHCP Snooping is a security feature that safeguards against rogue DHCP servers and prevents unauthorized devices from distributing IP addresses on a network. It involves classifying switch ports as trusted (connected to legitimate DHCP servers) or untrusted (end-user devices), and monitoring DHCP traffic. DHCP Snooping can drop or log DHCP traffic from untrusted sources and create a binding table of valid IP-MAC pairs to prevent address conflicts and IP misuse.
 
+INSTALATION:
+# Step 1: Clone the repository
+git clone https://github.com/safouat/Network-Automation-Toolkit
+
+# Step 2: Working with a virtual simulator (e.g., GNS3):
+# - Navigate to your lab in GNS3.
+# - Locate the network automation appliance.
+# - Open the terminal within the network automation appliance.
 
 
+# If you are a network administrator:
+# - Copy the content of the specific configuration file you wish to automate.
 
+# If you have administrative privileges, paste the copied content into your terminal and execute the necessary commands.
+
+USAGE:
 My topology:
-As previously mentioned, run the code on the network automation appliance by copying it using the command 'nano namefile.py'. After copying, execute the code using 'python3 namefile.py'. This will display the automation options you're looking to automate.
+As previously mentioned, run the code on the network automation appliance by copying it using the command 'nano namefile.py'.(namefile is RouterConfig or SwitchConfig or SecurityConfig)
+After copying, execute the code using 'python3 namefile.py'. 
+This will display the automation options you're looking to automate.
 ![Screenshot from 2023-08-14 19-05-21](https://github.com/safouat/Network-Automation-Toolkit/assets/120058233/32874f3c-6875-40ce-ae6b-303a260efc1b)
 
 
