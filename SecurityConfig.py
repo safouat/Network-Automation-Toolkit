@@ -374,7 +374,7 @@ def main():
             rate_limit = input("Enter the rate limit: ")
             dhcp_rate_time = input("Enter the DHCP rate time: ")
     
-            configure_dhcp_snooping(ip, number_vlan, interface, rate_limit, dhcp_rate_time)
+            dhcp_snooping(ip, number_vlan, interface, rate_limit, dhcp_rate_time)
        
           if choice=='4': 
              ip = input("Enter the device IP address: ")
@@ -384,7 +384,7 @@ def main():
              rate_limit = input("Enter the rate limit: ")
              interval = input("Enter the interval in seconds: ")
     
-             configure_arp_inspection(ip, vlan_number, arp_inspection_type, trusted_interface, rate_limit, interval)
+             arp_inspection(ip, vlan_number, arp_inspection_type, trusted_interface, rate_limit, interval)
 
 
     except KeyboardInterrupt:
