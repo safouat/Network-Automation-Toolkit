@@ -1,5 +1,5 @@
-pip==23.2.1
+pip==20.0.2
 netmiko==3.3.3
 napalm==3.2.0
-getpass==1.0.3
-pynput==1.7.6
+
+
