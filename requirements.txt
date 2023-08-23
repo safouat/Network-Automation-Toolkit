@@ -1,27 +1,5 @@
-Environment Setup Instructions
-1. Install GNS3:
-
-    Download and install GNS3 from the official website: GNS3 Installation
-    Follow the installation steps provided for your operating system.
-
-2. Install VMware Workstation:
-
-    Download and install VMware Workstation from the official website: VMware Workstation
-    Follow the installation instructions for your operating system.
-
-3. Set Up GNS3 with VMware Workstation:
-
-    Launch GNS3 and configure it to work with VMware Workstation as described in the GNS3 documentation.
-
-4. Obtain Cisco IOS Image:
-
-    Acquire a valid Cisco IOS image from authorized sources. Make sure you have the necessary licenses to use the image for testing purposes.
-
-5. Install "Network Automation Appliance" Template:
-
-    In GNS3, import the "Network Automation Appliance" template 
-    Follow the GNS3 documentation on importing appliances and templates.
-
-6. Additional Notes:
-
-    The "Network Automation Appliance" template  include preinstalled tools such as netmiko and napalm, so you may not need to install them separately.
+pip==20.0.2
+netmiko==3.3.3
+napalm==3.2.0
+getpass==1.0.3
+pynput==1.7.6
