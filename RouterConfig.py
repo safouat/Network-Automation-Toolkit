@@ -418,13 +418,12 @@ if __name__ == "__main__":
             # OSPF Configuration
             router_graph = construct_router_graphEIGRP_OSPF()
             process_number = int(input('\nEnter the number of AS: '))
-            n = int(input('Enter the number of AS: '))
             for router_info in router_graph.values():
                 ip_address = router_info['ip']
                 neighbors = router_info['neighbors']
                 wildMask = router_info['wildMask']
                 loopback = router_info['loopback']
-                configure_OSPF(ip_address, loopback, ip_address, process_number, neighbors, wildMask, n,username,password)
+                configure_OSPF(ip_address, loopback, process_number, neighbors, wildMask,username,password)
 
         elif choice == "5":
             # DHCP Configuration
