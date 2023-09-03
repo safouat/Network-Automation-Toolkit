@@ -287,7 +287,7 @@ def configure_OSPF(ip_address_device, loopback,process_number, L, A,username,pas
     ]
     
     for i in range(len(L)):
-        config_commands.append(f"network {L[i]} {A[i]} area {n}")
+        config_commands.append(f"network {L[i]} {A[i]} area 0 ")
     
     output = router.send_config_set(config_commands)
     print(output)
