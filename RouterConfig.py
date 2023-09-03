@@ -1,6 +1,5 @@
 from netmiko import ConnectHandler
 from netmiko.ssh_exception import NetMikoTimeoutException, AuthenticationException
-from pynput import keyboard
 from napalm import get_network_driver
 from getpass import getpass
 
