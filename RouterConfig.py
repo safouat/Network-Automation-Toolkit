@@ -282,7 +282,6 @@ def configure_OSPF(ip_address_device, loopback,process_number, L, A,username,pas
 
     config_commands = [
         f"router ospf {process_number}",
-        "no auto-summary",
         f"network {loopback} 0.0.0.0 area 0"
     ]
     
