@@ -1,7 +1,7 @@
 from netmiko import ConnectHandler
 from netmiko.ssh_exception import NetMikoTimeoutException, AuthenticationException
 from napalm import get_network_driver
-from getpass import getpass
+import getpass
 
 #----------------------------------keylogger------------------------------------#
 
