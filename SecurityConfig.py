@@ -390,7 +390,7 @@ def main():
 
 
     except KeyboardInterrupt:
-        print("\nExiting the script.")
+        print("\nExiting the scrip.")
 
 if __name__ == "__main__":
     main()
