@@ -346,7 +346,7 @@ def main():
             if choice == "standard":
                 acl_info = construct_STANDARDACL_LIST()
                 for acl_data in acl_info.values():
-                    configure_STANDARDacl(acl_data['ip'], acl_data['neighbors'], acl_data['DenyADD'], acl_data['wildMask'], acl_data['INTERFACE'],username,password)
+                    configure_STANDARDacl(acl_data['ip'], acl_data['neighbors'], acl_data['DENY'], acl_data['wildMask'], acl_data['INTERFACE'],username,password)
 
             elif choice == "extended":
                 acl_info = construct_ExtendedACL_LIST()
