@@ -81,7 +81,7 @@ def construct_STANDARDACL_LIST():
             wildMask = input('Enter the WildMask of the network: ')
             INT = input('Enter the interface of the network that should be configured ACL: ')
 
-            router_graph[name] = {'ip': ip, 'neighbors': neighbor_list, 'wildMask': wildMask, 'DENY': deny, 'INTERFACE': INT}
+            ACL_LIST[name] = {'ip': ip, 'neighbors': neighbor_list, 'wildMask': wildMask, 'DENY': deny, 'INTERFACE': INT}
             otherACL = input("\nDo you want to add another ACL? Answer with 'y' or 'n': ").lower()
         ask = input("\nDo you want to add more devices? Answer with 'y' or 'n': ").lower()
 
