@@ -24,15 +24,15 @@ def configure_STANDARDacl(ip,permitADD, DenyADD, wildmask, interfaceACL,username
     if choice1 == 'yes':
         n = int(input('Enter the number of ACL: '))  # n should be in 100-199 or 2000-2699
         config_commands = [
-            f"access list {n} permit {permitADD}",
-            f"access list {n} deny {DenyADD} {wildmask}",
-            f"access list {n} permit any",
+            f"access-list {n} permit {permitADD}",
+            f"access-list {n} deny {DenyADD} {wildmask}",
+            f"access-list {n} permit any",
         ]
     else:
         n = input('Enter the name of ACL: ')
         nuber = int(input('Enter the entry of ACL: '))
         config_commands = [
-            f"access list {n}",
+            f"access-list {n}",
             f"{nuber} permit {permitADD}",
             f"{nuber} deny {DenyADD} {wildmask}",
             f"{nuber} permit any",
