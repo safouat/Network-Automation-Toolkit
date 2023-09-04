@@ -378,7 +378,7 @@ def main():
     
             dhcp_snooping(ip, number_vlan, interface, rate_limit, dhcp_rate_time,username,password)
        
-          if choice=='4': 
+        if choice=='4': 
              ip = input("Enter the device IP address: ")
              vlan_number = input("Enter the VLAN number: ")
              arp_inspection_type = input("Enter the ARP inspection type (src-mac/dst-mac/ip): ")
