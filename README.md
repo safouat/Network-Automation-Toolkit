@@ -96,6 +96,7 @@ My topology:
 As previously mentioned, run the code on the terminal of the network automation appliance by copying it using the command 'nano namefile.py'.(namefile is RouterConfig or SwitchConfig or SecurityConfig)
 After copying, execute the code using 'python3 namefile.py'. 
 This will display the automation options you're looking to automate.
-![Screenshot from 2023-08-14 19-05-21](https://github.com/safouat/Network-Automation-Toolkit/assets/120058233/32874f3c-6875-40ce-ae6b-303a260efc1b)
+![image](https://github.com/safouat/Network-Automation-Toolkit/assets/120058233/79697ef7-c331-4024-8f46-9ff72b6c2452)
+
 
 
