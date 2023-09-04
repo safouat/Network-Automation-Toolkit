@@ -1,6 +1,6 @@
 from napalm import get_network_driver
 from napalm.base.exceptions import LockError, UnlockError
-from getpass import getpass
+import getpass
 # ----------ACL AUTOMATION------------------ #
 # ----PORT SECURITY IMPLEMENTATION---------- #
 # ----DHCP SNOOPING IMPLEMENTATION-------- #
