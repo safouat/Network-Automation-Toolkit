@@ -30,12 +30,11 @@ def configure_STANDARDacl(ip,permitADD, DenyADD, wildmask, interfaceACL,username
         ]
     else:
         n = input('Enter the name of ACL: ')
-        nuber = int(input('Enter the entry of ACL: '))
         config_commands = [
-            f"access-list {n}",
-            f"{nuber} permit {permitADD}",
-            f"{nuber} deny {DenyADD} {wildmask}",
-            f"{nuber} permit any",
+            f"ip access-list standard {n}",
+            f"permit {permitADD}",
+            f"deny {DenyADD} {wildmask}",
+            "permit any",
         ]
    
     choice2 = input('Do you want INBOUND? (YES or NO): ').lower()
