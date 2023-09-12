@@ -152,11 +152,11 @@ def construct_ExtendedACL_LIST():
             wildMask4_list = [neighbor.strip() for neighbor in wildMask4.split(',')]
             
             
-            portocol= input('Enter the portocol:UDP,TCP,ICMP,EIGRP,OSPF ')
+            protocol= input('Enter the portocol:UDP,TCP,ICMP,EIGRP,OSPF ')
             INT=input('Enter the interface on wich the ACL WILL BE CONFIGURED ')
             
 
-            ACL_LIST[name] = {'ip': ip, 'SOURCEP': SOURCEP, 'wildMask1': wildMask1, 'DESTINATIONP': DESTINATIONP,'wildMask2': wildMask2,'SOURCED': SOURCED, 'wildMask3': wildMask3, 'DESTINATIOND': DESTINATIOND,'wildMask4': wildMask4, 'INTERFACE': INT}
+            ACL_LIST[name] = {'ip': ip, 'SOURCEP': SOURCEP, 'wildMask1': wildMask1, 'DESTINATIONP': DESTINATIONP,'wildMask2': wildMask2,'SOURCED': SOURCED, 'wildMask3': wildMask3, 'DESTINATIOND': DESTINATIOND,'wildMask4': wildMask4, 'INTERFACE': INT,'protocol':protocol}
             otherACL = input("\nDo you want to add another ACL? Answer with 'y' or 'n': ").lower()
         ask = input("\nDo you want to add more devices? Answer with 'y' or 'n': ").lower()
 
