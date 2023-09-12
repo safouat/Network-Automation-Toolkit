@@ -170,19 +170,34 @@ def configure_extended_acl(ip,source_permit, source_wildmask, dest_permit, dest_
     device = get_napalm_connection(ip,username,password)
     if choice1 == 'yes':
         n = int(input('Enter the number of ACL: '))  # n should be in 100-199 or 2000-2699
+        if protocol == 'dhcp' or protocol == 'udp':  # Corrected the comparison operator
+        n1 = int(input('Enter the number of port: '))
         config_commands = [
+            f"access list {n} permit {protocol} {source_permit} {source_wildmask} {dest_permit} {dest_wildmask} eq {n1}",
+            f"access list {n} deny {protocol} {source_deny} {source_deny_wildmask} {dest_deny} {dest_deny_wildmask} eq {n1}",
+        ]
+        else:
+            config_commands = [
             f"access list {n} permit {protocol} {source_permit} {source_wildmask} {dest_permit} {dest_wildmask}",
             f"access list {n} deny {protocol} {source_deny} {source_deny_wildmask} {dest_deny} {dest_deny_wildmask}",
-           
         ]
+            
     else:
         n = input('Enter the name of ACL: ')
-       
+        if protocol == 'dhcp' or protocol == 'udp':  # Corrected the comparison operator
+        n1 = int(input('Enter the number of port: '))
         config_commands = [
+        f'ip access-list extended {n}',
+        f'permit {protocol} {source_permit} {source_wildmask} {dest_permit} {dest_wildmask} eq {n1}',
+        f'deny {protocol} {source_deny} {source_deny_wildmask} {dest_deny} {dest_deny_wildmask} eq {n1}',
+        ]
+        else:
+            config_commands = [
         f'ip access-list extended {n}',
         f'permit {protocol} {source_permit} {source_wildmask} {dest_permit} {dest_wildmask}',
         f'deny {protocol} {source_deny} {source_deny_wildmask} {dest_deny} {dest_deny_wildmask}',
         ]
+        
     choice2 = input('Do you want INBOUND? (YES or NO): ').lower()
     a = 'in' if choice2 == 'yes' else 'out'
     
