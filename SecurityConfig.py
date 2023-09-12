@@ -366,8 +366,12 @@ def main():
             elif choice == "extended":
                 acl_info = construct_ExtendedACL_LIST()
                 for acl_name, acl_data in acl_info.items():
-                    configure_extended_acl(acl_data['ip'], acl_data['SOURCEP'], acl_data['wildMask1'], acl_data['DESTINATIONP'], acl_data['wildMask2'],
-                                           acl_data['SOURCED'], acl_data['wildMask3'], acl_data['DESTINATIOND'], acl_data['wildMask4'], acl_data['portocol'], acl_data['INTERFACE'],username,password)
+                    for i in acl_data['SOURCEP']:
+                        for j in acl_data['DESTINATIONP']:
+                            for a in acl_data['SOURCED']:
+                                for b in acl_data['DESTINATIOND']:
+                                    configure_extended_acl(acl_data['ip'], i, acl_data['wildMask1'], j, acl_data['wildMask2'],
+                                                 a, acl_data['wildMask3'], b, acl_data['wildMask4'], acl_data['protocol'], acl_data['INTERFACE'],username,password)
 
             elif choice == "crud":
                 ip = input('Enter the IP address of the device: ')
@@ -406,6 +410,9 @@ def main():
 
     except KeyboardInterrupt:
         print("\nExiting the scrip.")
+
+
+
 
 if __name__ == "__main__":
     main()
