@@ -341,7 +341,7 @@ def arp_inspection(ip, vlan_number, arp_inspection_type, trusted_interface, rate
 def main():
     try:
       while True:
-        print("\n========== Switch Configuration Menu ==========")
+        print("\n========== Security Configuration Menu ==========")
         print("1. ACL Configuration")
         print("2. Port security Configuration")
         print("3. DHCP Snooping configuration")
