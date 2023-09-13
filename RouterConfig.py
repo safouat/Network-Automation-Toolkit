@@ -398,11 +398,11 @@ if __name__ == "__main__":
         elif choice == "3":
             # EIGRP Configuration
             eigrp_choice = input("Do you want to configure all interfaces on EIGRP? (yes/no): ").lower()
-            if eigrp_choice == 'no':
+            if eigrp_choice == 'yes':
                 ip_address_device = input('\nEnter the IP address of the device: ')
                 n = int(input('Enter the number of AS: '))
                 configure_eigrp_all_interfaces(ip_address_device, n,username,password)
-            elif eigrp_choice == 'yes':
+            elif eigrp_choice == 'no':
                 router_graph = construct_router_graphEIGRP_OSPF()
                 n = int(input('Enter the number of AS: '))
                 for router_info in router_graph.values():
