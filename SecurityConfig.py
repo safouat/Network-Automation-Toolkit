@@ -1,6 +1,7 @@
 from napalm import get_network_driver
 from napalm.base.exceptions import LockError, UnlockError
 import getpass
+from switches import switches
 # ----------ACL AUTOMATION------------------ #
 # ----PORT SECURITY IMPLEMENTATION---------- #
 # ----DHCP SNOOPING IMPLEMENTATION-------- #
@@ -222,105 +223,54 @@ def configure_extended_acl(ip,source_permit, source_wildmask, dest_permit, dest_
     finally:
         device.discard_config()
           #--------------------PORT SECURITY----------------#
-def Port_security_Parameters():
-        Port_security_list={} 
-        otherACL = 'y'
-        while otherACL == 'y':
-            ip = input('\nEnter the IP address of the device: ')
-            i=0
+def port_security(ip, choice1, interface, stickyLearning, max, Mac, username, password):
+    """
+    Configure port security on a network device using NAPALM.
 
-            interface =input("Enter a list of interface  where we should activate the port security separated by spaces: ").split()
-            interface_list = [neighbor.strip() for neighbor in interface]
+    :param ip: IP address of the network device.
+    :param choice1: 'shut', 'restrict', or 'protect' for different port security options.
+    :param interface: Name of the interface to configure.
+    :param stickyLearning: Sticky MAC address for port security.
+    :param max: Maximum number of allowed MAC addresses.
+    :param Mac: Additional MAC address to allow (optional).
+    :param username: Username for device login.
+    :param password: Password for device login.
+    """
 
-            interMac={}
-            for int in interface_list:
+    device = get_napalm_connection(ip, username, password)
 
-                      mac = input('Enter a list of MAC addresses  allowed  by the switch separated by spaces: ')
-                      mac_address = [neighbor.strip() for neighbor in mac.split(',')]
-                      choice= input('which type of violation do you want to use Shut, Restrict, or Protect ').lower()
-                      agingTime= input('enter the Agin time of the port  ').lower()
-                      stickyLearning=input('enter the sticky learning Enabled or Disabled')
-
-                      Port_security_list[i] = {'ip': ip, 'interMAC': mac_address, 'choice':choice,'interface':int,'agin time':agingTime,'sticky learning':stickyLearning}
-                      i+=1
-            otherACL = input("\nDo you want to add another ACL? Answer with 'y' or 'n': ").lower()
-        return Port_security_list
-def port_security(ip,choice1,interface,stickyLearning, Mac,username,password):
-    device = get_napalm_connection(ip,username,password)
-  if choice1 == 'shut':
-        choice2 = input('do you want to configure the port in Access or Trunk ').lower()
+    if choice1 == 'shut':
+        choice2 = input('Do you want to configure the port in Access or Trunk? ').lower()
         config_commands = [
             f"interface {interface}",
             f"switchport port-security mac-address {stickyLearning}",
             f"switchport port-security maximum {max}",
             "errdisable recovery cause psecure-violation",
-
         ]
-        if(Mac!=0):
-             config_commands+=[f"switchport port-security mac-address {Mac}"]
-
+        if Mac is not None and Mac != "":
+            config_commands.append(f"switchport port-security mac-address {Mac}")
 
     elif choice1 == 'restrict':
         config_commands = [
             f"interface {interface}",
             f"switchport port-security maximum {max}",
-
             f"switchport port-security mac-address {stickyLearning}",
-  
-
             f"switchport port-security maximum {max}",
-            "switchport port-security violation restrict"
+            "switchport port-security violation restrict",
         ]
-        if(Mac!=0):
-             config_commands+=[f"switchport port-security mac-address {Mac}"]
-
+        if Mac is not None and Mac != "":
+            config_commands.append(f"switchport port-security mac-address {Mac}")
 
     elif choice1 == 'protect':
         config_commands = [
             f"interface {interface}",
-
             f"switchport port-security maximum {max}",
-
             f"switchport port-security mac-address {stickyLearning}",
-
-            "switchport port-security violation protect"
+            "switchport port-security violation protect",
         ]
-        if(Mac!=0):
-             config_commands+=[f"switchport port-security mac-address {Mac}"]
+        if Mac is not None and Mac != "":
+            config_commands.append(f"switchport port-security mac-address {Mac}")
 
-    try:
-        device.load_merge_candidate(config="\n".join(config_commands))
-        diffs = device.compare_config()
-
-        if diffs:
-            print("Proposed configuration changes:")
-            print(diffs)
-            device.commit_config()
-            print("Configuration committed.")
-    else:
-            print("No configuration changes to commit.")
-    except LockError:
-        print("Configuration lock error.")
-    except UnlockError:
-        print("Configuration unlock error.")
-    except Exception as e:
-        print(f"Error configuring Port security: {e}")
-    finally:
-        device.discard_config()
- #-----------------------------------DHCP SNOOPING--------------------------------------#
-def dhcp_snooping(ip,number_vlan,interface,rate,dhcp_rate_time,username,password):
-    device = get_napalm_connection(ip,username,password)
-    
-    config_commands = [
-        "ip dhcp snooping",
-        f"ip dhcp snooping vlan {number_vlan}",  # Replace with the appropriate VLAN(s)
-        f"errdisable recovery cause {dhcp_rate_time}",  
-        "no ip dhcp snooping information option",
-         f"int {interface}",
-         "ip dhcp snooping trust ", 
-        f"ip dhcp snooping limit rate {rate}",  # Set the rate limit
-    ]
-    
     try:
         device.load_merge_candidate(config="\n".join(config_commands))
         diffs = device.compare_config()
@@ -332,14 +282,18 @@ def dhcp_snooping(ip,number_vlan,interface,rate,dhcp_rate_time,username,password
             print("Configuration committed.")
         else:
             print("No configuration changes to commit.")
-    except LockError:
-        print("Configuration lock error.")
-    except UnlockError:
-        print("Configuration unlock error.")
+    except LockError as e:
+        print(f"Configuration lock error: {e}")
+    except UnlockError as e:
+        print(f"Configuration unlock error: {e}")
     except Exception as e:
-        print(f"Error configuring DHCP snooping: {e}")
+        print(f"Error configuring Port security: {e}")
     finally:
         device.discard_config()
+
+
+
+
 
 def arp_inspection(ip, vlan_number, arp_inspection_type, trusted_interface, rate_limit, interval,username,password):
     device = get_napalm_connection(ip,username,password)
@@ -414,14 +368,17 @@ def main():
             else:
                 print("Invalid choice. Please choose 'standard', 'extended', or 'crud'.")
         if choice=='2':
-            Port_Security =Port_security_Parameters()
-            for Port in Port_Security.values():
-                    ip=Port['ip']
-                    interface=Port['interface']
-                    choice=Port['choice']
-                    stickyLearning=Port['sticky learning']
-                    for MAC in  Port['interMac']:
-                        port_security(ip,choice ,interface,stickyLearning,Mac,username,password)
+              for switch in switches:
+              port_security(
+            switch['ip'],
+            switch['choice1'],
+            switch['interface'],
+            switch['stickyLearning'],
+            switch['max'],
+            switch['Mac'],
+            switch['username'],
+            switch['password']
+        )
         if choice=='3': 
             ip = input("Enter the device IP address: ")
             number_vlan = input("Enter the VLAN number: ")
